@@ -1,7 +1,7 @@
 // @flow
 
-import monk from 'monk';
+import Mongoose from 'mongoose';
 
-const db = monk('db:27017/app');
+Mongoose.connect('mongodb://db/app');
 
-export default db; // TODO
+export default Mongoose;
