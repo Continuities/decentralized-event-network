@@ -1,5 +1,6 @@
 # Decentralized Event Network POC
-Just messing around for now
+
+A simple distributed social network focused on Event management. Implements the [ActivityPub](https://www.w3.org/TR/activitypub/) spec for federated content.
 
 ## To get started with development
 1. `yarn dev:install` to build the dev docker containers
