@@ -1,6 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const FlowWebpackPlugin = require('flow-webpack-plugin');
 
 module.exports = {
   entry: "./src/index.js",
@@ -9,8 +10,7 @@ module.exports = {
     rules: [{
       test: /\.(js|jsx)$/,
       exclude: /(node_modules|bower_components)/,
-      loader: "babel-loader",
-      options: { presets: ["@babel/env"] }
+      use: [ "babel-loader", 'eslint-loader' ]
     }, {
       test: /\.css$/,
       use: ["style-loader", "css-loader"]
@@ -27,7 +27,7 @@ module.exports = {
     port: 3000
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
+    new FlowWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "static", "index.html"),
       filename: 'index.html'

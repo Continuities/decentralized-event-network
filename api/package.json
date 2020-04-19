@@ -5,9 +5,27 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start": "node src/main.js"
+    "eslint": "eslint ./src",
+    "flow:check": "flow check ./src/",
+    "flow:build": "yarn eslint && yarn flow:check && flow-remove-types ./src/ -d ./dist/ --all --pretty",
+    "serve": "yarn flow:build && node ./dist/main.js",
+    "start": "nodemon -x \"yarn serve\""
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "dist/*"
+    ]
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "monk": "^7.2.0",
+    "nodemon": "^2.0.3"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "flow-bin": "^0.123.0",
+    "flow-remove-types": "^2.123.0"
   }
 }
