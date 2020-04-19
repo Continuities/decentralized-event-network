@@ -1,0 +1,71 @@
+version: '3'
+services:
+
+  server:
+    build:
+      context: ../.
+      dockerfile: docker/server/Dockerfile.dev
+    image: den-server
+    # deploy:
+    #   resources: # Set these values when you know what you do!
+    #     limits:
+    #       cpus: '0.001'
+    #       memory: 50M
+    #     reservations:
+    #       cpus: '0.0001'
+    #       memory: 20M
+    ports:
+      - '80:80' # Connect localhost 80 port to container 80 port
+    links: # Link services to access http://app and  http://api inside the container
+      - api:api
+      - app:app
+
+  app:
+    build:
+      context: ../.
+      dockerfile: docker/app/Dockerfile.dev
+    image: den-app
+    environment:
+      - NODE_ENV=development
+    volumes: # For webpack dev server to use our local files
+      - ./../app:/usr/src/app
+    ports:
+      - '3000:3000' # For docker to now where to redirect HMR queries
+
+  api:
+    # deploy:
+    #   resources: # Set these values when you know what you do!
+    #     limits:
+    #       cpus: '0.001'
+    #       memory: 50M
+    #     reservations:
+    #       cpus: '0.0001'
+    #       memory: 20M
+    build:
+      context: ../.
+      dockerfile: docker/api/Dockerfile.dev
+    image: den-api
+    environment:
+      # - DB_NAME=myappdb
+      # - DB_USER=myappuser
+      # - DB_PASSWORD=myapppassword
+      # - DB_HOST="db"
+      # - DB_PORT=5432
+      - NODE_ENV=development
+    # links:
+    #   - db:db
+    volumes:
+      - ./../api:/usr/src/api
+    ports:
+      - '8080:8080'
+    # depends_on:
+    #   - "db"
+
+  # db:
+  #   build:
+  #     context: ../.
+  #     dockerfile: docker/db/Dockerfile.dev
+  #   env_file: db/psql.env
+  #   image: myapp-db
+  #   ports:
+  #     - '5431:5432'
