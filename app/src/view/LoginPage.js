@@ -9,8 +9,9 @@ import React from 'react';
 import VerticalColumn from './VerticalColumn';
 import { useCoreStyles } from '../core-styles';
 import LoginForm from './LoginForm';
-import FormController from '../controller/form-controller';
-import { navigate } from '@reach/router';
+import FormController from '../controller/FormController';
+import { useAuth } from '../controller/AuthProvider';
+import { navigate, Redirect } from '@reach/router';
 import { 
   Container,
   Card,
@@ -20,11 +21,18 @@ import {
 
 const Login = () => {
   const styles = useCoreStyles();
+  const [ auth, setAuth ] = useAuth();
   const formController = FormController(
     'POST', 
     '/api/user/token',
-    () => navigate('/home')
+    res => {
+      navigate('/home');
+      setAuth(res.token)
+    }
   );
+  if (auth) {
+    return <Redirect to='/home' noThrow />;
+  }
   return (
     <Container className={styles.fullHeight} maxWidth="xs">
       <VerticalColumn className={styles.fullHeight}>

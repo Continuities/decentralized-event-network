@@ -9,7 +9,7 @@ import React from 'react';
 import VerticalColumn from './VerticalColumn';
 import { useCoreStyles } from '../core-styles';
 import RegisterForm from './RegisterForm';
-import FormController from '../controller/form-controller';
+import FormController from '../controller/FormController';
 import { navigate } from '@reach/router';
 import { 
   Container,

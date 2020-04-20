@@ -8,7 +8,7 @@
 import React from 'react';
 import ControllableForm from './ControllableForm';
 
-import type { $FormController } from '../controller/form-controller';
+import type { $FormController } from '../controller/FormController';
 
 const fields = [{
   name: 'username',

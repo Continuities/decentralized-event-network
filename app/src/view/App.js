@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { Router } from "@reach/router";
+import AuthProvider from '../controller/AuthProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
@@ -40,19 +41,21 @@ const App = () => {
   const styles = useStyles();
   return (
     <ThemeProvider theme={theme}>
-      <Container 
-        className={styles.main} 
-        component="main" 
-        maxWidth="sm"
-      >
-        <CssBaseline />
-        <Router>
-          <Home path="/home" />
-          <Login path="/login" />
-          <Register path="/register" />
-          <FourOhFour default />
-        </Router>
-      </Container>
+      <AuthProvider>
+        <Container 
+          className={styles.main} 
+          component="main" 
+          maxWidth="sm"
+        >
+          <CssBaseline />
+          <Router>
+            <Home path="/home" />
+            <Login path="/login" />
+            <Register path="/register" />
+            <FourOhFour default />
+          </Router>
+        </Container>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

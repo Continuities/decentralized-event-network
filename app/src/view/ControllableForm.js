@@ -12,9 +12,9 @@ import {
   Box 
 } from '@material-ui/core';
 import ProgressButton from './ProgressButton';
-import { nilControls } from '../controller/form-controller';
+import { nilControls } from '../controller/FormController';
 
-import type { $FormController } from '../controller/form-controller';
+import type { $FormController } from '../controller/FormController';
 
 type FormField = {|
   name:string,

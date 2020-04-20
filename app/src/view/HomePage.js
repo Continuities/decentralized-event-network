@@ -6,9 +6,18 @@
  */
 
 import React from 'react';
+import { useAuth } from '../controller/AuthProvider';
+import { Redirect } from '@reach/router';
+import jwtDecode from 'jwt-decode';
 
-const Home = () => (
-  <div>WELCOME HOME</div>
-);
+const Home = () => {
+  const [ auth, ] = useAuth();
+  if (!auth) {
+    return <Redirect to='/login' noThrow />;
+  }
+  return (
+    <div>Welcome home {jwtDecode(auth).username}</div>
+  );
+};
 
 export default Home;
