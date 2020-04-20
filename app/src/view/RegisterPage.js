@@ -11,11 +11,13 @@ import { useCoreStyles } from '../core-styles';
 import RegisterForm from './RegisterForm';
 import FormController from '../controller/FormController';
 import { navigate } from '@reach/router';
+import { Link } from '../controller/RouterLink';
 import { 
   Container,
   Card,
   CardContent,
-  Typography
+  Typography,
+  Box
 } from '@material-ui/core';
 
 const Register = () => {
@@ -35,6 +37,9 @@ const Register = () => {
                 Sign Up
               </Typography>
               <RegisterForm controller={formController} />
+              <Box mt={2}>
+                <Link to='/login'>Have an account?</Link>
+              </Box>
             </VerticalColumn>
           </CardContent>
         </Card>

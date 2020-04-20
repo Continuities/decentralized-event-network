@@ -7,8 +7,8 @@
  */
 
 import React from 'react';
-import { Router } from "@reach/router";
-import AuthProvider from '../controller/AuthProvider';
+import { Router, Redirect } from "@reach/router";
+import AuthProvider, { useAuth } from '../controller/AuthProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
@@ -37,6 +37,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const BaseRoute = () => {
+  const [ auth, ] = useAuth();
+  return <Redirect noThrow to={auth ? '/home' : '/login'} />;
+};
+
 const App = () => {
   const styles = useStyles();
   return (
@@ -49,6 +54,7 @@ const App = () => {
         >
           <CssBaseline />
           <Router>
+            <BaseRoute path="/" />
             <Home path="/home" />
             <Login path="/login" />
             <Register path="/register" />
@@ -58,6 +64,6 @@ const App = () => {
       </AuthProvider>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

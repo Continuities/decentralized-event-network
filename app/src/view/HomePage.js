@@ -8,6 +8,7 @@
 import React from 'react';
 import { useAuth } from '../controller/AuthProvider';
 import { Redirect } from '@reach/router';
+import NavigationFrame from './NavigationFrame';
 import jwtDecode from 'jwt-decode';
 
 const Home = () => {
@@ -16,7 +17,9 @@ const Home = () => {
     return <Redirect to='/login' noThrow />;
   }
   return (
-    <div>Welcome home {jwtDecode(auth).username}</div>
+    <NavigationFrame>
+      Welcome home {jwtDecode(auth).username}
+    </NavigationFrame>
   );
 };
 

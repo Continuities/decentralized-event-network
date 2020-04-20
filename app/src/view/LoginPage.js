@@ -12,11 +12,13 @@ import LoginForm from './LoginForm';
 import FormController from '../controller/FormController';
 import { useAuth } from '../controller/AuthProvider';
 import { navigate, Redirect } from '@reach/router';
+import { Link } from '../controller/RouterLink';
 import { 
   Container,
   Card,
   CardContent,
-  Typography
+  Typography,
+  Box
 } from '@material-ui/core';
 
 const Login = () => {
@@ -43,12 +45,15 @@ const Login = () => {
                 Sign In
               </Typography>
               <LoginForm controller={formController} />
+              <Box mt={2}>
+                <Link to='/register'>Don&apos;t have an account?</Link>
+              </Box>
             </VerticalColumn>
           </CardContent>
         </Card>
       </VerticalColumn>
     </Container>
   );
-}
+};
 
 export default Login;
