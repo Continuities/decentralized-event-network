@@ -17,28 +17,29 @@ services:
       - app
 
   app:
-    build:
-      context: ../.
-      dockerfile: docker/app/Dockerfile.dev
+    build: 
+      context: ../app
+      dockerfile: Dockerfile.dev
     image: den-app
     environment:
       - NODE_ENV=development
     volumes:
-      - ./../app:/usr/src/app
+      - ../app:/opt/app
     ports:
       - 3000:3000 # For docker to now where to redirect HMR queries
 
   api:
     build:
-      context: ../.
-      dockerfile: docker/api/Dockerfile.dev
+      context: ../api
+      dockerfile: Dockerfile.dev
     image: den-api
     environment:
       - NODE_ENV=development
     links:
       - db:db
     volumes:
-      - ./../api:/usr/src/api
+      - ../api:/opt/api
+      - /opt/api/node_modules # anonymous volume for node_modules only
     ports:
       - 8080:8080 # unbind this in prod
     depends_on:

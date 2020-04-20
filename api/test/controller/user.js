@@ -24,8 +24,8 @@ before(async () => {
 describe('User Controller', () => {
 
   const goodPut = {
-    displayName: 'The Dude',
     password: 'TheDudeAbides',
+    'password-confirm': 'TheDudeAbides',
     email: 'thedude@lebowski.com'
   };
 
@@ -54,14 +54,14 @@ describe('User Controller', () => {
       chai.expect(res.body.errors[0].param).to.equal('email');
     });
 
-    it('needs a valid displayName', async () => {
+    it('needs matching passwords', async () => {
       const res = await chai
         .request(app.default)
         .put('/user/dude')
-        .send(Object.assign({}, goodPut, { displayName: '' }));
+        .send(Object.assign({}, goodPut, { 'password-confirm': 'whoops' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
-      chai.expect(res.body.errors[0].param).to.equal('displayName');
+      chai.expect(res.body.errors[0].param).to.equal('password-confirm');
     });
 
     it('works when everything is good', async () => {
@@ -108,7 +108,7 @@ describe('User Controller', () => {
     it('should fail for an invalid username/email', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/dude/token')
+        .post('/user/token')
         .send({
           user: 'flynn@thearcade.com',
           password: goodPut.password
@@ -119,7 +119,7 @@ describe('User Controller', () => {
     it('should fail for an invalid password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/dude/token')
+        .post('/user/token')
         .send({
           user: goodPut.email,
           password: 'JustLikeYourOpinion'
@@ -130,7 +130,7 @@ describe('User Controller', () => {
     it('should return a token for valid email/password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/dude/token')
+        .post('/user/token')
         .send({
           user: goodPut.email,
           password: goodPut.password
@@ -143,7 +143,7 @@ describe('User Controller', () => {
     it('should return a token for valid username/password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/dude/token')
+        .post('/user/token')
         .send({
           user: 'dude',
           password: goodPut.password

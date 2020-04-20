@@ -8,3 +8,5 @@
 export const cls = (...classes:Array<?(string | boolean)>):string => {
   return classes.filter(c => !!c).join(' ');
 };
+
+export const merge = (a:Object, b:Object):Object => Object.assign({}, a, b);

@@ -7,6 +7,7 @@
     "start": "webpack-dev-server --config webpack.config.cjs --mode development --devtool inline-source-map --hot",
     "build": "webpack --config webpack.config.cjs --mode=production"
   },
+  "browserslist": "> 5%, not dead",
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",

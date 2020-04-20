@@ -8,7 +8,7 @@
   "scripts": {
     "dev:install": "./script/install-dev.sh",
     "dev:up": "docker-compose -f docker/docker-compose.dev.yml up -d",
-    "dev:down": "docker-compose -f docker/docker-compose.dev.yml down",
+    "dev:down": "docker-compose -f docker/docker-compose.dev.yml down && docker-compose -f docker/docker-compose.dev.yml rm -vf",
     "dev:logs": "docker-compose -f docker/docker-compose.dev.yml logs -f",
     "dev:uninstall": "docker-compose -f docker/docker-compose.dev.yml down --rmi all",
     "dev:connect:api": "docker exec -it target_api_1 /bin/sh",

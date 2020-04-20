@@ -8,8 +8,9 @@
 
 import React from 'react';
 import { Router } from "@reach/router";
-import Login from './Login';
-import Register from './Register';
+import Home from './HomePage';
+import Login from './LoginPage';
+import Register from './RegisterPage';
 import FourOhFour from './FourOhFour';
 import { 
   makeStyles, 
@@ -46,6 +47,7 @@ const App = () => {
       >
         <CssBaseline />
         <Router>
+          <Home path="/home" />
           <Login path="/login" />
           <Register path="/register" />
           <FourOhFour default />

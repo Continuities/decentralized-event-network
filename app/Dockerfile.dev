@@ -1,7 +1,7 @@
 FROM node:latest
 
-WORKDIR /usr/src/api
+WORKDIR /opt/app
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD [ "yarn", "start" ]

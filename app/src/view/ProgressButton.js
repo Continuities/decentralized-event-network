@@ -32,7 +32,10 @@ const useStyles = makeStyles((theme) => ({
   },
   hidden: {
     pointerEvents: 'none',
-    opacity: 0
+    opacity: 0,
+    '& > div': {
+      animationPlayState: 'paused'
+    }
   }
 }));
 

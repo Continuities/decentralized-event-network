@@ -8,18 +8,23 @@
 import React from 'react';
 import VerticalColumn from './VerticalColumn';
 import { useCoreStyles } from '../core-styles';
-import ProgressButton from './ProgressButton';
+import LoginForm from './LoginForm';
+import FormController from '../controller/form-controller';
+import { navigate } from '@reach/router';
 import { 
   Container,
   Card,
   CardContent,
-  TextField,
-  Typography,
-  Box
+  Typography
 } from '@material-ui/core';
 
 const Login = () => {
   const styles = useCoreStyles();
+  const formController = FormController(
+    'POST', 
+    '/api/user/token',
+    () => navigate('/home')
+  );
   return (
     <Container className={styles.fullHeight} maxWidth="xs">
       <VerticalColumn className={styles.fullHeight}>
@@ -29,7 +34,7 @@ const Login = () => {
               <Typography gutterBottom variant="h5" component="h2">
                 Sign In
               </Typography>
-              <LoginForm />
+              <LoginForm controller={formController} />
             </VerticalColumn>
           </CardContent>
         </Card>
@@ -37,42 +42,5 @@ const Login = () => {
     </Container>
   );
 }
-
-const LoginForm = () => (
-  <form noValidate>
-    <TextField
-      variant="outlined"
-      margin="normal"
-      required
-      fullWidth
-      id="email"
-      label="Email Address"
-      name="email"
-      autoComplete="email"
-      autoFocus
-    />
-    <TextField
-      variant="outlined"
-      margin="normal"
-      required
-      fullWidth
-      name="password"
-      label="Password"
-      type="password"
-      id="password"
-      autoComplete="current-password"
-    />
-    <Box mt={4}>
-      <ProgressButton
-        type="submit"
-        fullWidth
-        variant="contained"
-        color="primary"
-      >
-        Sign In
-      </ProgressButton>
-    </Box>
-  </form>
-);
 
 export default Login;
