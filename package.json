@@ -13,5 +13,6 @@
     "dev:uninstall": "docker-compose -f docker/docker-compose.dev.yml down --rmi all",
     "dev:connect:api": "docker exec -it target_api_1 /bin/sh",
     "dev:connect:db": "psql -h localhost -p 5431 -U myappuser -d myappdb"
-  }
+  },
+  "dependencies": {}
 }
