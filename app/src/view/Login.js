@@ -8,11 +8,11 @@
 import React from 'react';
 import VerticalColumn from './VerticalColumn';
 import { useCoreStyles } from '../core-styles';
+import ProgressButton from './ProgressButton';
 import { 
   Container,
   Card,
   CardContent,
-  Button,
   TextField,
   Typography,
   Box
@@ -63,14 +63,14 @@ const LoginForm = () => (
       autoComplete="current-password"
     />
     <Box mt={4}>
-      <Button
+      <ProgressButton
         type="submit"
         fullWidth
         variant="contained"
         color="primary"
       >
         Sign In
-      </Button>
+      </ProgressButton>
     </Box>
   </form>
 );
