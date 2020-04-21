@@ -37,7 +37,7 @@ describe('User Controller', () => {
     it('needs a valid username', async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/d')
+        .put('/api/user/d')
         .send(goodPut);
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
@@ -47,7 +47,7 @@ describe('User Controller', () => {
     it('needs a valid email', async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/dude')
+        .put('/api/user/dude')
         .send(Object.assign({}, goodPut, { email: 'invalid' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
@@ -57,7 +57,7 @@ describe('User Controller', () => {
     it('needs matching passwords', async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/dude')
+        .put('/api/user/dude')
         .send(Object.assign({}, goodPut, { 'password-confirm': 'whoops' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
@@ -67,7 +67,7 @@ describe('User Controller', () => {
     it('works when everything is good', async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/dude')
+        .put('/api/user/dude')
         .send(goodPut);
       chai.expect(res).to.have.status(200);
     });
@@ -75,7 +75,7 @@ describe('User Controller', () => {
     it(`won't insert duplicate emails`, async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/dude1')
+        .put('/api/user/dude1')
         .send(goodPut);
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
@@ -85,7 +85,7 @@ describe('User Controller', () => {
     it(`won't insert duplicate usernames`, async () => {
       const res = await chai
         .request(app.default)
-        .put('/user/dude')
+        .put('/api/user/dude')
         .send(Object.assign({}, goodPut, { email: 'dude1@lebowski.com' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
@@ -101,14 +101,14 @@ describe('User Controller', () => {
       await mockMongoose.helper.reset();
       await chai
         .request(app.default)
-        .put('/user/dude')
+        .put('/api/user/dude')
         .send(goodPut);
     });
 
     it('should fail for an invalid username/email', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/token')
+        .post('/api/user/token')
         .send({
           user: 'flynn@thearcade.com',
           password: goodPut.password
@@ -119,7 +119,7 @@ describe('User Controller', () => {
     it('should fail for an invalid password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/token')
+        .post('/api/user/token')
         .send({
           user: goodPut.email,
           password: 'JustLikeYourOpinion'
@@ -130,7 +130,7 @@ describe('User Controller', () => {
     it('should return a token for valid email/password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/token')
+        .post('/api/user/token')
         .send({
           user: goodPut.email,
           password: goodPut.password
@@ -143,7 +143,7 @@ describe('User Controller', () => {
     it('should return a token for valid username/password', async () => {
       const res = await chai
         .request(app.default)
-        .post('/user/token')
+        .post('/api/user/token')
         .send({
           user: 'dude',
           password: goodPut.password
@@ -156,7 +156,7 @@ describe('User Controller', () => {
     it('should prevent private access without a token', async () => {
       const res = await chai
         .request(app.default)
-        .get('/user/dude/private');
+        .get('/api/user/dude/private');
       chai.expect(res).to.have.status(401);
     });
 
@@ -164,7 +164,7 @@ describe('User Controller', () => {
       const badToken = await generateToken('Donny');
       const res = await chai
         .request(app.default)
-        .get('/user/dude/private')
+        .get('/api/user/dude/private')
         .set('Authorization', `Bearer ${badToken}`);
       chai.expect(res).to.have.status(401);
     });
@@ -172,7 +172,7 @@ describe('User Controller', () => {
     it('should allow access with a valid token', async () => {
       const res = await chai
         .request(app.default)
-        .get('/user/dude/private')
+        .get('/api/user/dude/private')
         .set('Authorization', `Bearer ${token}`);
       chai.expect(res).to.have.status(200);
     });

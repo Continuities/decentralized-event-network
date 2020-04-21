@@ -4,6 +4,7 @@ import express from 'express';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import UserController from './controller/user.js';
+import ActivityPubController from './controller/activitypub.js';
 
 dotenv.config();
 
@@ -15,10 +16,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(upload.array());
 
-// Test endpoint
-app.get('/date', (req, res) => res.send(new Date().toDateString()));
+app.use('/api/user', UserController);
 
-app.use('/user', UserController);
+app.use('/', ActivityPubController);
 
 app.listen(port, () => console.log(`API started on port ${port}`));
 

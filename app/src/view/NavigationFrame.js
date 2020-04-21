@@ -104,7 +104,7 @@ const NavigationFrame = ({ children }: P) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-              Responsive drawer
+              
           </Typography>
         </Toolbar>
       </AppBar>
