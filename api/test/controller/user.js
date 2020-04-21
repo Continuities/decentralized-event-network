@@ -23,7 +23,7 @@ before(async () => {
 
 describe('User Controller', () => {
 
-  const goodPut = {
+  const dudeData = {
     password: 'TheDudeAbides',
     'password-confirm': 'TheDudeAbides',
     email: 'thedude@lebowski.com'
@@ -38,7 +38,7 @@ describe('User Controller', () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/d')
-        .send(goodPut);
+        .send(dudeData);
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
       chai.expect(res.body.errors[0].param).to.equal('username');
@@ -48,7 +48,7 @@ describe('User Controller', () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/dude')
-        .send(Object.assign({}, goodPut, { email: 'invalid' }));
+        .send(Object.assign({}, dudeData, { email: 'invalid' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
       chai.expect(res.body.errors[0].param).to.equal('email');
@@ -58,7 +58,7 @@ describe('User Controller', () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/dude')
-        .send(Object.assign({}, goodPut, { 'password-confirm': 'whoops' }));
+        .send(Object.assign({}, dudeData, { 'password-confirm': 'whoops' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
       chai.expect(res.body.errors[0].param).to.equal('password-confirm');
@@ -68,15 +68,15 @@ describe('User Controller', () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/dude')
-        .send(goodPut);
-      chai.expect(res).to.have.status(200);
+        .send(dudeData);
+      chai.expect(res).to.have.status(201);
     });
 
     it(`won't insert duplicate emails`, async () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/dude1')
-        .send(goodPut);
+        .send(dudeData);
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
       chai.expect(res.body.errors[0].param).to.equal('email');
@@ -86,7 +86,7 @@ describe('User Controller', () => {
       const res = await chai
         .request(app.default)
         .put('/api/user/dude')
-        .send(Object.assign({}, goodPut, { email: 'dude1@lebowski.com' }));
+        .send(Object.assign({}, dudeData, { email: 'dude1@lebowski.com' }));
       chai.expect(res).to.have.status(422);
       chai.expect(res.body.errors).to.have.length(1);
       chai.expect(res.body.errors[0].param).to.equal('username');
@@ -102,7 +102,7 @@ describe('User Controller', () => {
       await chai
         .request(app.default)
         .put('/api/user/dude')
-        .send(goodPut);
+        .send(dudeData);
     });
 
     it('should fail for an invalid username/email', async () => {
@@ -111,7 +111,7 @@ describe('User Controller', () => {
         .post('/api/user/token')
         .send({
           user: 'flynn@thearcade.com',
-          password: goodPut.password
+          password: dudeData.password
         });
       chai.expect(res).to.have.status(401);
     });
@@ -121,7 +121,7 @@ describe('User Controller', () => {
         .request(app.default)
         .post('/api/user/token')
         .send({
-          user: goodPut.email,
+          user: dudeData.email,
           password: 'JustLikeYourOpinion'
         });
       chai.expect(res).to.have.status(401);
@@ -132,49 +132,115 @@ describe('User Controller', () => {
         .request(app.default)
         .post('/api/user/token')
         .send({
-          user: goodPut.email,
-          password: goodPut.password
+          user: dudeData.email,
+          password: dudeData.password
         });
       chai.expect(res).to.have.status(200);
       chai.expect(res.body.token).to.not.be.empty;
     });
 
-    let token;
     it('should return a token for valid username/password', async () => {
       const res = await chai
         .request(app.default)
         .post('/api/user/token')
         .send({
           user: 'dude',
-          password: goodPut.password
+          password: dudeData.password
         });
       chai.expect(res).to.have.status(200);
-      token = res.body.token;
-      chai.expect(token).to.not.be.empty;
+      chai.expect(res.body.token).to.not.be.empty;
     });
 
-    it('should prevent private access without a token', async () => {
+  });
+
+  // event creation tests
+  describe('events', () => {
+
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const eventData = {
+      name: 'Bowling',
+      start: today.toISOString(),
+      end: tomorrow.toISOString()
+    };
+
+    before(async () => {
+      await mockMongoose.helper.reset();
+      await chai
+        .request(app.default)
+        .put('/api/user/dude')
+        .send(dudeData);
+    });
+
+    it('should prevent creation without a token', async () => {
       const res = await chai
         .request(app.default)
-        .get('/api/user/dude/private');
+        .put('/api/user/dude/event')
+        .send(eventData);
       chai.expect(res).to.have.status(401);
     });
 
-    it('should prevent private access from other users', async () => {
-      const badToken = await generateToken('Donny');
+    it('should prevent creation with the wrong token', async () => {
+      const token = await generateToken('Donny');
       const res = await chai
         .request(app.default)
-        .get('/api/user/dude/private')
-        .set('Authorization', `Bearer ${badToken}`);
-      chai.expect(res).to.have.status(401);
-    });
-
-    it('should allow access with a valid token', async () => {
-      const res = await chai
-        .request(app.default)
-        .get('/api/user/dude/private')
+        .put('/api/user/dude/event')
+        .send(eventData)
         .set('Authorization', `Bearer ${token}`);
-      chai.expect(res).to.have.status(200);
+      chai.expect(res).to.have.status(401);
+    });
+
+    it('should prevent creation without a name', async () => {
+      const token = await generateToken('dude');
+      const res = await chai
+        .request(app.default)
+        .put('/api/user/dude/event')
+        .send(Object.assign({}, eventData, { 'name': '' }))
+        .set('Authorization', `Bearer ${token}`);
+      chai.expect(res).to.have.status(422);
+      chai.expect(res.body.errors).to.have.length(1);
+      chai.expect(res.body.errors[0].param).to.equal('name');
+    });
+
+    it('should prevent creation with a bad start', async () => {
+      const token = await generateToken('dude');
+      const res = await chai
+        .request(app.default)
+        .put('/api/user/dude/event')
+        .send(Object.assign({}, eventData, { 'start': 'yesterday' }))
+        .set('Authorization', `Bearer ${token}`);
+      chai.expect(res).to.have.status(422);
+      chai.expect(res.body.errors).to.have.length(1);
+      chai.expect(res.body.errors[0].param).to.equal('start');
+    });
+
+    it('should prevent creation with a bad end', async () => {
+      const token = await generateToken('dude');
+      const res = await chai
+        .request(app.default)
+        .put('/api/user/dude/event')
+        .send(Object.assign({}, eventData, { 'end': 'yesterday' }))
+        .set('Authorization', `Bearer ${token}`);
+      chai.expect(res).to.have.status(422);
+      chai.expect(res.body.errors).to.have.length(1);
+      chai.expect(res.body.errors[0].param).to.equal('end');
+    });
+
+    it('should prevent creation with invalid duration', async () => {
+      const token = await generateToken('dude');
+      const res = await chai
+        .request(app.default)
+        .put('/api/user/dude/event')
+        .send({
+          name: 'Bowling',
+          start: tomorrow.toISOString(),
+          end: today.toISOString()
+        })
+        .set('Authorization', `Bearer ${token}`);
+      chai.expect(res).to.have.status(422);
+      chai.expect(res.body.errors).to.have.length(1);
+      chai.expect(res.body.errors[0].param).to.equal('end');
     });
 
   });

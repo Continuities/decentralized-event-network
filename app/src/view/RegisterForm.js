@@ -14,7 +14,6 @@ const fields = [{
   name: 'username',
   label: 'Username',
   required: true,
-  autoComplete: 'username',
   pattern: ['\\w*', 'Letters, numbers, and underscores only.']
 }, {
   name: 'email',

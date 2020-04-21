@@ -7,7 +7,13 @@
 
 import express from 'express';
 import v from 'express-validator';
-import User from '../model/user.js';
+import User from '../model/api/user.js';
+import { 
+  createActor, 
+  createEvent,
+  getActorId
+} from '../service/activitypub.js';
+import generateRSAKeypair from 'generate-rsa-keypair';
 import { 
   withAuthentication,
   validatePassword, 
@@ -20,6 +26,12 @@ import type { auth$Request } from '../service/auth.js'
 const emailRegex = /^([a-zA-Z0-9_\-.]+)@([a-zA-Z0-9_\-.]+)\.([a-zA-Z]{2,5})$/;
 
 const router:Router<auth$Request> = express.Router();
+
+const dateValidator = async value => {
+  if (isNaN(new Date(value).getTime())) {
+    throw 'Invalid date';
+  }
+};
 
 // Register a new user with specified username
 // Returns 422 if any inputs are bad
@@ -51,15 +63,20 @@ router.put('/:username',
       return res.status(422).json({ errors: errors.array() });
     }
 
+    const keys = generateRSAKeypair();
+    const actor = await createActor(req.params.username, keys.public);
+
     const user = new User({
       username: req.params.username,
       email: (req.body:Object).email,
-      password: (req.body:Object).password
+      password: (req.body:Object).password,
+      actorId: String(actor.id),
+      privateKey: keys.private
     });
 
     const result = await user.save();
     
-    res.send({
+    res.status(201).send({
       username: result.username,
       email: result.email
     });
@@ -101,5 +118,40 @@ router.get('/:username/private', withAuthentication, (req, res) => {
   res.sendStatus(200);
 });
 
+// Creates a new event, hosted by this user
+router.put('/:username/event', 
+  withAuthentication,
+  v.check('name').isLength({ min: 4 }).withMessage('Event name must be at least 4 characters long'),
+  v.check('start').custom(dateValidator),
+  v.check('end').custom(dateValidator),
+  v.check('end').custom(async (value, { req }) => {
+    const start = new Date(req.body.start);
+    const end = new Date(value);
+    if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end <= start) {
+      throw 'End date must come after start date'
+    }
+  }),
+  async (req, res) => {
+
+    const errors = v.validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    if (!req.user || req.user.username !== req.params.username) {
+      return res.sendStatus(401);
+    }
+
+    const { start, end } = (req.body:Object);
+    const event = await createEvent(
+      req.params.name,
+      getActorId(req.params.username),
+      new Date(start),
+      new Date(end)
+    );
+
+    res.status(201).json({ id: event.id });
+  }
+);
 
 export default router;
