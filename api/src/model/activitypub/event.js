@@ -7,25 +7,20 @@
 
 import Mongoose from '../../service/db.js';
 import { Object$Schema } from './object.js';
-import uuid from 'short-uuid';
 
 const Event$Schema = new Object$Schema({
   name: String,
+  attributedTo: String,
   startTime: String,
   endTime: String
 });
 
 class Event$Document /* :: extends Mongoose$Document */ {
   name: string;
+  attributedTo: string;
   startTime: string;
   endTime: string;
 }
-
-Event$Schema.pre('save', function() {
-  const base = `${process.env.DOMAIN || ''}/event/`;
-  this.id = `${base}${uuid.generate()}`;
-  this.type = 'Event';
-});
 
 Event$Schema.loadClass(Event$Document);
 

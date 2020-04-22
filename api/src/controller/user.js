@@ -9,7 +9,7 @@ import express from 'express';
 import v from 'express-validator';
 import User from '../model/api/user.js';
 import { 
-  createActor, 
+  newUser, 
   createEvent,
   getActorId
 } from '../service/activitypub.js';
@@ -64,7 +64,7 @@ router.put('/:username',
     }
 
     const keys = generateRSAKeypair();
-    const actor = await createActor(req.params.username, keys.public);
+    const actor = await newUser(req.params.username, keys.public);
 
     const user = new User({
       username: req.params.username,
@@ -143,14 +143,14 @@ router.put('/:username/event',
     }
 
     const { start, end } = (req.body:Object);
-    const event = await createEvent(
-      req.params.name,
+    const eventId = await createEvent(
+      (req.body:Object).name,
       getActorId(req.params.username),
       new Date(start),
       new Date(end)
     );
 
-    res.status(201).json({ id: event.id });
+    res.status(201).json({ id: eventId });
   }
 );
 

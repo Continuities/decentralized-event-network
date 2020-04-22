@@ -12,6 +12,7 @@ import AuthProvider, { useAuth } from '../controller/AuthProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
+import CreateEvent from './CreateEvent';
 import FourOhFour from './FourOhFour';
 import { 
   makeStyles, 
@@ -58,6 +59,7 @@ const App = () => {
             <Home path="/home" />
             <Login path="/login" />
             <Register path="/register" />
+            <CreateEvent path="/create" />
             <FourOhFour default />
           </Router>
         </Container>

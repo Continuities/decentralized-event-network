@@ -32,7 +32,8 @@ const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
   root: {
-    display: 'flex'
+    display: 'flex',
+    height: '100%'
   },
   drawer: {
     [theme.breakpoints.up('sm')]: {
@@ -58,14 +59,18 @@ const useStyles = makeStyles(theme => ({
   },
   bottom: {
     marginTop: 'auto'
+  },
+  content: {
+    width: '100%'
   }
 }));
 
 type P = {|
+  title: string,
   children: React$Node
 |}
 
-const NavigationFrame = ({ children }: P) => {
+const NavigationFrame = ({ title, children }: P) => {
   const styles = useStyles();
   const theme = useTheme();
   const [ auth, setAuth ] = useAuth();
@@ -104,7 +109,7 @@ const NavigationFrame = ({ children }: P) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-              
+            {title}
           </Typography>
         </Toolbar>
       </AppBar>

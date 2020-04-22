@@ -7,6 +7,8 @@
  */
 
 import React, { createContext, useContext, useState } from 'react';
+import { Redirect } from '@reach/router';
+import jwtDecode from 'jwt-decode';
 
 const STORAGE_KEY = 'auth';
 
@@ -36,5 +38,14 @@ const AuthProvider = ({ children }: P) => {
 };
 
 export const useAuth = ():AuthContextType => useContext(AuthContext);
+
+export const requireUser = <Com: React$ComponentType<*>>(Component:Com) => 
+  (props:React$ElementConfig<Com>) => {
+    const [ auth, ] = useAuth();
+    if (!auth) {
+      return <Redirect to='/login' />
+    }
+    return <Component {...props} user={jwtDecode(auth).username}/>;
+  };
 
 export default AuthProvider;

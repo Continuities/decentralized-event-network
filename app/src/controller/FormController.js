@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { merge } from '../util';
+import { useAuth } from './AuthProvider';
 
 type FormControls = {|
   values: FormValues,
@@ -28,6 +29,7 @@ export type FormErrors = {
 const FormController = (method:string, endpoint:string, onSuccess:any => void, initialValues:FormValues = {}):$FormController => (
   () => {
     const [ state, setState ] = useState({ values: initialValues, errors: {}, isSubmitting: false });
+    const [ auth, setAuth ] = useAuth();
 
     const onChange = ({ target }: FormTarget) => {
       const newValues = merge(state.values, { [target.name]: target.value });
@@ -36,9 +38,14 @@ const FormController = (method:string, endpoint:string, onSuccess:any => void, i
 
     const onSubmit = (e:Event) => {
       e.preventDefault();
+      const headers:Object = { 'Content-Type': 'application/json' };
+      if (auth) {
+        headers['Authorization'] = `Bearer ${auth}`;
+      }
+
       fetch(buildEndpoint(endpoint, state.values), {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(state.values)
       }).then(async res => {
         if (res.ok) {
@@ -58,6 +65,10 @@ const FormController = (method:string, endpoint:string, onSuccess:any => void, i
           }
           setState(merge(state, { isSubmitting: false, errors }));
           return;
+        }
+        if (auth && res.status === 401) {
+          // Clear bad tokens
+          setAuth(null);
         }
         setState(merge(state, { responseCode: res.status, isSubmitting: false }));
       });
