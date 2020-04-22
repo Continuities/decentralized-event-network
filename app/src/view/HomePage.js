@@ -6,10 +6,9 @@
  */
 
 import React from 'react';
-import { useAuth } from '../controller/AuthProvider';
-import { navigate, Redirect } from '@reach/router';
+import { requireUser } from '../controller/AuthProvider';
+import { navigate } from '@reach/router';
 import NavigationFrame from './NavigationFrame';
-import jwtDecode from 'jwt-decode';
 import { Fab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Add as AddIcon } from '@material-ui/icons';
@@ -22,14 +21,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Home = () => {
-  const [ auth, ] = useAuth();
+const Home = ({ user }: { user: string }) => {
   const styles = useStyles();
-  if (!auth) {
-    return <Redirect to='/login' noThrow />;
-  }
   return (
-    <NavigationFrame title={jwtDecode(auth).username}>
+    <NavigationFrame title={user}>
       <Fab 
         className={styles.fab} 
         aria-label="Create event"
@@ -41,4 +36,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default requireUser(Home);

@@ -43,7 +43,7 @@ export const requireUser = <Com: React$ComponentType<*>>(Component:Com) =>
   (props:React$ElementConfig<Com>) => {
     const [ auth, ] = useAuth();
     if (!auth) {
-      return <Redirect to='/login' />
+      return <Redirect to='/login' noThrow />
     }
     return <Component {...props} user={jwtDecode(auth).username}/>;
   };
