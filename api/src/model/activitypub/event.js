@@ -6,7 +6,7 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema } from './object.js';
+import { Object$Schema, Object$Document } from './object.js';
 
 const Event$Schema = new Object$Schema({
   name: String,
@@ -15,7 +15,7 @@ const Event$Schema = new Object$Schema({
   endTime: String
 });
 
-class Event$Document /* :: extends Mongoose$Document */ {
+class Event$Document extends Object$Document {
   name: string;
   attributedTo: string;
   startTime: string;

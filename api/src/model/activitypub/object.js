@@ -23,3 +23,8 @@ export class Object$Schema extends Mongoose.Schema<any> {
     });
   }
 }
+
+export class Object$Document /* :: extends Mongoose$Document */ {
+  id: string | number;
+  type: string;
+}

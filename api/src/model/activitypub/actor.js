@@ -6,14 +6,15 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema } from './object.js';
-import { getActorId } from '../../service/activitypub.js';
+import { Object$Schema, Object$Document } from './object.js';
 
 const Actor$Schema = new Object$Schema({
   preferredUsername: String,
   name: { type: String, unique: true, index:true },
   inbox: String,
   outbox: String,
+  followers: String,
+  following: String,
   publicKey: {
     id: String,
     owner: String,
@@ -21,29 +22,19 @@ const Actor$Schema = new Object$Schema({
   }
 });
 
-class Actor$Document /* :: extends Mongoose$Document */ {
+class Actor$Document extends Object$Document {
   preferredUsername: string;
   name: string;
   inbox: string;
   outbox: string;
+  followers: string;
+  following: string;
   publicKey: {
     id: string,
     owner: string,
     publicKeyPem: string
   };
 }
-
-Actor$Schema.pre('save', function() {
-  this.id = getActorId(this.name);
-  this.type = 'Person';
-  this.inbox = `${this.id}/inbox`;
-  this.outbox = `${this.id}/outbox`;
-  if (!this.preferredUsername) {
-    this.preferredUsername = this.name;
-  }
-  this.publicKey.id = `${this.id}#main-key`,
-  this.publicKey.owner = this.id
-});
 
 Actor$Schema.loadClass(Actor$Document);
 

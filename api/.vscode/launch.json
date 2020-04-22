@@ -4,10 +4,9 @@
     {
       "type": "node",
       "request": "attach",
-      "name": "Node: Nodemon",
-      "processId": "${command:PickProcess}",
-      "restart": true,
-      "protocol": "inspector"
+      "name": "Attach to remote",
+      "address": "127.0.0.1",
+      "port": 9229
     }
   ]
 }

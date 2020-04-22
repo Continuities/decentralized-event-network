@@ -6,16 +6,23 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema } from './object.js';
+import { Object$Schema, Object$Document } from './object.js';
 
 const Activity$Schema = new Object$Schema({
   to: [ String ],
+  cc: [ String ],
+  bto: [ String ],
+  bcc: [ String ],
+  audience: [ String ],
   actor: String,
   object: String
 });
 
-class Activity$Document /* :: extends Mongoose$Document */ {
-  to: [ string ];
+export class Activity$Document extends Object$Document {
+  to: ?[ string ];
+  cc: ?[ string ];
+  bto: ?[ string ];
+  bcc: ?[ string ];
   actor: string;
   object: string;
 }

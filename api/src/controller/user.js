@@ -8,17 +8,20 @@
 import express from 'express';
 import v from 'express-validator';
 import User from '../model/api/user.js';
-import { 
-  newUser, 
-  createEvent,
-  getActorId
-} from '../service/activitypub.js';
+import { newUser } from '../service/user.js';
+import { createEvent } from '../service/event.js';
 import generateRSAKeypair from 'generate-rsa-keypair';
 import { 
   withAuthentication,
   validatePassword, 
   generateToken 
 } from '../service/auth.js';
+import {
+  matchesPassword,
+  uniqueEmail,
+  uniqueUser,
+  timespan
+} from '../validators.js';
 
 import type { Router } from 'express';
 import type { auth$Request } from '../service/auth.js'
@@ -39,23 +42,9 @@ router.put('/:username',
   v.check('email').isEmail(),
   v.check('username').isLength({ min: 4 }).withMessage("Username must be at least 4 characters"),
   v.check('password').isLength({ min: 5 }).withMessage("Password must be at least 5 characters"),
-  v.check('password-confirm').custom(async (value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error("Passwords don't match");
-    }
-  }),
-  v.check('email').custom(async val => {
-    const existing = await User.findOne({ email: val });
-    if (existing) {
-      throw 'An account with that email already exists';
-    }
-  }),
-  v.check('username').custom(async val => {
-    const existing = await User.findOne({ username: val });
-    if (existing) {
-      throw 'That username is taken';
-    }
-  }),
+  v.check('password-confirm').custom(matchesPassword),
+  v.check('email').custom(uniqueEmail),
+  v.check('username').custom(uniqueUser),
   async (req, res) => {
 
     const errors = v.validationResult(req);
@@ -124,14 +113,8 @@ router.put('/:username/event',
   v.check('name').isLength({ min: 4 }).withMessage('Event name must be at least 4 characters long'),
   v.check('start').custom(dateValidator),
   v.check('end').custom(dateValidator),
-  v.check('end').custom(async (value, { req }) => {
-    const start = new Date(req.body.start);
-    const end = new Date(value);
-    if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end <= start) {
-      throw 'End date must come after start date'
-    }
-  }),
-  async (req, res) => {
+  v.check('end').custom(timespan),
+  async (req, res, next:express$NextFunction) => {
 
     const errors = v.validationResult(req);
     if (!errors.isEmpty()) {
@@ -143,14 +126,20 @@ router.put('/:username/event',
     }
 
     const { start, end } = (req.body:Object);
-    const eventId = await createEvent(
+    const [ eventId, asyncAction ] = await createEvent(
       (req.body:Object).name,
-      getActorId(req.params.username),
+      req.params.username,
       new Date(start),
       new Date(end)
     );
 
+    // Send the response right away
     res.status(201).json({ id: eventId });
+
+    // Wait for the async actions to finish before closing the request
+    await asyncAction;
+
+    next();
   }
 );
 

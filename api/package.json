@@ -9,7 +9,7 @@
     "flow:check": "flow check ./src/",
     "flow:build": "flow-remove-types ./src/ -d ./dist/ --all --pretty",
     "build": "yarn eslint && yarn flow:check && yarn flow:build",
-    "serve": "yarn flow:build && node ./dist/main.js",
+    "serve": "yarn flow:build && node --inspect ./dist/main.js",
     "start": "nodemon -x \"yarn serve\"",
     "test": "yarn flow:build && mocha --timeout 120000 --exit \"test/**/*.js\""
   },
@@ -32,6 +32,7 @@
     "mock-mongoose": "^8.0.1-a",
     "mongoose": "^5.9.9",
     "multer": "^1.4.2",
+    "node-fetch": "^2.6.0",
     "nodemon": "^2.0.3",
     "short-uuid": "^3.1.1"
   },
