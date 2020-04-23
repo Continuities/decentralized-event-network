@@ -17,7 +17,8 @@ import type { auth$Request } from '../service/auth.js'
 const router:Router<auth$Request> = express.Router();
 
 /** 
- * Client-server endpoints. Implementation left as an excercise for the reader.
+ * Block client-server endpoints for now. 
+ * Implementation left as an excercise for the reader.
  */
 
 router.get('/user/:username/inbox', async (req, res) => {
@@ -33,14 +34,8 @@ router.post('/user/:username/outbox', async (req, res) => {
 });
 
 /**
- * Server-server federation endpoints 
+ * Server-server federation
  */
-
-router.get('/user/:username/outbox', async (req, res) => {
-  // TODO
-  res.json([]);
-});
-
 router.post('/user/:username/inbox', 
   v.check('username').custom(userExists),
   async (req, res) => {
@@ -62,7 +57,9 @@ router.post('/user/:username/inbox',
   }
 );
 
-// Main route for getting ActivityPub objects by id
+/*
+ * Main route for getting ActivityPub objects by id
+ */
 router.get('/*', async (req, res) => {
   const id = url.format({
     protocol: req.protocol,

@@ -15,7 +15,14 @@ const Activity$Schema = new Object$Schema({
   bcc: [ String ],
   audience: [ String ],
   actor: String,
+  published: Date,
   object: String
+});
+
+Activity$Schema.pre('save', async function() {
+  if (this.isNew) { 
+    this.published = new Date();
+  }
 });
 
 export class Activity$Document extends Object$Document {
@@ -24,6 +31,7 @@ export class Activity$Document extends Object$Document {
   bto: ?[ string ];
   bcc: ?[ string ];
   actor: string;
+  published: string;
   object: string;
 }
 

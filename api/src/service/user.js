@@ -8,6 +8,7 @@
 import { getActivityId } from './activitypub.js';
 import { Actor, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
+import { Inbox, Outbox } from '../model/api.js'
 
 export const getActorId = (username:string) => {
   return `${process.env.DOMAIN || ''}/user/${username}`;
@@ -42,8 +43,28 @@ export const getActivity = async (username:string, activityUUID:string): ?Object
   return activity ? sanitized(activity) : null;
 }
 
-export const getFollowers = (username:string): Array<string> => {
+export const getFollowers = async (username:string): Promise<Array<string>> => {
   // TODO
   // Follow ourselves for testing purposes
   return [ getActorId(username) ];
+};
+
+export const getInbox = async (username:string): Promise<Array<string>> => {
+  const entries:Array<Inbox> = await Inbox
+    .find({ from: getActorId(username) })
+    .sort({ 'published': -1 })
+    .populate('activity');
+
+  // $FlowFixMe Not sure how to handle populated fields in Flow
+  return entries.map(o => sanitized(o.activity)); 
+};
+
+export const getOutbox = async (username:string): Promise<Array<string>> => {
+  const entries:Array<Outbox> = await Outbox
+    .find({ from: getActorId(username) })
+    .sort({ 'published': -1 })
+    .populate('activity');
+
+  // $FlowFixMe Not sure how to handle populated fields in Flow
+  return entries.map(o => sanitized(o.activity)); 
 };

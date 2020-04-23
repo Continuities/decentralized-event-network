@@ -6,11 +6,11 @@
  */
 
 import { Event, Activity, Object$Document } from '../model/activitypub.js';
-import { getActor, getActivity, getFollowers } from './user.js';
+import { getActor, getActivity, getFollowers, getOutbox } from './user.js';
 import { getEvent } from './event.js';
 import { getActorId } from './user.js';
 
-import { Inbox } from '../model/api.js';
+import { Inbox, Outbox } from '../model/api.js';
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
@@ -33,9 +33,20 @@ type ObjectJson = {
 export const toInbox = async (username:string, activity:ActivityJson) => {
   // TODO: Handle forward-from-inbox https://www.w3.org/TR/activitypub/#inbox-forwarding
   // TODO: Possibly store local copies of external activities?
+  let dbActivity = await Activity.findOne({ id: activity.id });
+  if (!activity.id.startsWith(process.env.DOMAIN)) {
+    // Store a copy the first time we see a remote activity
+    dbActivity = await new Activity(activity).save();
+  }
+  if (!dbActivity) {
+    // This means it's a local activity that isn't stored.
+    // This shouldn't happen, so just abort.
+    throw 'Non-existent local activity delivered to an invox =/';
+  }
   const entry = new Inbox({
     to: getActorId(username),
-    activity: activity.id
+    published: dbActivity.published,
+    activity: dbActivity._id
   });
   return entry.save();
 };
@@ -43,7 +54,7 @@ export const toInbox = async (username:string, activity:ActivityJson) => {
 // Submit an activity to an actor's outbox. Currently called by the REST api
 // during POST, but could be easily modified to allow direct client-server ActivityPub
 export const toOutbox = async (username:string, activity:ActivityJson):Promise<void> => {
-  // TODO: Implement the rest of the relevant activity types
+  // TODO: Validate that the activity's actor matches the username
   activity.id = getActivityId(username, uuid.generate());
   let createdActivity;
   switch (activity.type.toLowerCase()) {
@@ -56,11 +67,18 @@ export const toOutbox = async (username:string, activity:ActivityJson):Promise<v
       createdActivity = await new Activity(activity).save();
     }
     break;
+    // TODO: Implement the rest of the relevant activity types
   }}
 
   if (!createdActivity) {
     return;
   }
+
+  await new Outbox({
+    from: getActorId(username),
+    published: createdActivity.published,
+    activity: createdActivity._id
+  }).save();
 
   return publish(activity);
 };
@@ -76,10 +94,6 @@ const publish = async (activity:ActivityJson):Promise<void> => {
     ...(activity.bcc || []),
     ...(activity.audience || [])
   ];
-  
-  // Don't publish blind fields
-  delete activity.bto;
-  delete activity.bcc;
 
   const uris:Array<Set<string>> = await Promise.all(destinations.map(resolveDestination));
   const inboxes = uris.reduce((acc, cur) => new Set([...acc, ...cur]));
@@ -153,6 +167,14 @@ const renderCollection = (id:string, items:Array<string>) => ({
   "items": items
 });
 
+const renderOrderedCollection = (id:string, items:Array<string>) => ({
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "id": id,
+  "type": "OrderedCollection",
+  "totalItems": items.length,
+  "orderedItems": items
+});
+
 export const getObject = async (id:string): Object | null => {
   const domain = process.env.DOMAIN;
   if (!domain || !id.startsWith(domain)) {
@@ -188,7 +210,11 @@ export const getObject = async (id:string): Object | null => {
     }
     else if (rest.length === 2 && rest[1] === 'followers') {
       // Followers request
-      return renderCollection(id, getFollowers(rest[0]));
+      return renderCollection(id, await getFollowers(rest[0]));
+    }
+    else if (rest.length === 2 && rest[1] === 'outbox') {
+      // User outbox request
+      return renderOrderedCollection(id, await getOutbox(rest[0]));
     }
     else if (rest.length === 3 && rest[1] === 'activities') {
       // Activity request

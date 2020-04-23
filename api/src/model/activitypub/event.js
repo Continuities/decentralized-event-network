@@ -11,8 +11,8 @@ import { Object$Schema, Object$Document } from './object.js';
 const Event$Schema = new Object$Schema({
   name: String,
   attributedTo: String,
-  startTime: String,
-  endTime: String
+  startTime: Date,
+  endTime: Date
 });
 
 class Event$Document extends Object$Document {

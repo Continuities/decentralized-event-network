@@ -9,12 +9,14 @@ import Mongoose from '../../service/db.js';
 
 const Inbox$Schema = new Mongoose.Schema({
   to: { type: String, index: true },
-  activity: String
+  published: Date,
+  activity: { type: Mongoose.Schema.Types.ObjectId, ref: 'Activity' }
 });
 
 class Inbox$Document /* :: extends Mongoose$Document */ {
   to: string;
-  activity: string;
+  published: string;
+  activity: bson$ObjectId | string | number;
 }
 
 Inbox$Schema.loadClass(Inbox$Document);
