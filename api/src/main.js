@@ -16,7 +16,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(upload.array());
 
-app.use('/api/user', UserController);
+app.use('/api/user', 
+  (req, res, next:express$NextFunction) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  },
+  UserController);
 
 app.use('/', ActivityPubController);
 

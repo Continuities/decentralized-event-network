@@ -11,7 +11,6 @@ import { useCoreStyles } from '../core-styles';
 import EventForm from './EventForm';
 import FormController from '../controller/FormController';
 import { Link } from '../controller/RouterLink';
-import { requireUser } from '../controller/AuthProvider';
 import { navigate } from '@reach/router';
 import { localISODate } from '../util';
 import { 
@@ -22,12 +21,12 @@ import {
   Box
 } from '@material-ui/core';
 
-const CreateEvent = ({ user }: { user: string }) => {
+const CreateEvent = () => {
   const styles = useCoreStyles();
 
   const formController = FormController(
     'PUT', 
-    `/api/user/${user}/event`,
+    `/api/user/event`,
     () => {
       navigate('/home');
     },
@@ -57,4 +56,4 @@ const CreateEvent = ({ user }: { user: string }) => {
   );
 }
 
-export default requireUser(CreateEvent);
+export default CreateEvent;

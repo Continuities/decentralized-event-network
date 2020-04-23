@@ -14,27 +14,25 @@ import { Inbox, Outbox } from '../model/api.js';
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
+import type { Activity$Document } from '../model/activitypub.js';
+
 export const getActivityId = (user:string, uuid:string) => {
   return `${getActorId(user)}/activities/${uuid}`
 };
 
 // TODO: Support other relevant Activity types
-type ActivityJson = {
-  type: "Create",
-  object: string | ObjectJson
-} & Object;
 
 // TODO: Support other relevant Object types
-type ObjectJson = {
+export type ObjectJson = {
   type: "Event",
   id: string
 } & Object;
 
-export const toInbox = async (username:string, activity:ActivityJson) => {
+export const toInbox = async (username:string, activity:Activity$Document) => {
   // TODO: Handle forward-from-inbox https://www.w3.org/TR/activitypub/#inbox-forwarding
   // TODO: Possibly store local copies of external activities?
   let dbActivity = await Activity.findOne({ id: activity.id });
-  if (!activity.id.startsWith(process.env.DOMAIN)) {
+  if (!String(activity.id).startsWith(process.env.DOMAIN || '')) {
     // Store a copy the first time we see a remote activity
     dbActivity = await new Activity(activity).save();
   }
@@ -53,7 +51,7 @@ export const toInbox = async (username:string, activity:ActivityJson) => {
 
 // Submit an activity to an actor's outbox. Currently called by the REST api
 // during POST, but could be easily modified to allow direct client-server ActivityPub
-export const toOutbox = async (username:string, activity:ActivityJson):Promise<void> => {
+export const toOutbox = async (username:string, activity:Activity$Document):Promise<void> => {
   // TODO: Validate that the activity's actor matches the username
   activity.id = getActivityId(username, uuid.generate());
   let createdActivity;
@@ -83,7 +81,7 @@ export const toOutbox = async (username:string, activity:ActivityJson):Promise<v
   return publish(activity);
 };
 
-const publish = async (activity:ActivityJson):Promise<void> => {
+const publish = async (activity:Activity$Document):Promise<void> => {
 
   // TODO: Don't resolve collections belonging to others https://www.w3.org/TR/activitypub/#outbox-delivery
 
@@ -159,7 +157,7 @@ const resolveDestination = async (to:string): Promise<Set<string>> => {
   return new Set();
 };
 
-const renderCollection = (id:string, items:Array<string>) => ({
+const renderCollection = (id:string, items:Array<*>):Object => ({
   "@context": "https://www.w3.org/ns/activitystreams",
   "id": id,
   "type": "Collection",
@@ -167,7 +165,7 @@ const renderCollection = (id:string, items:Array<string>) => ({
   "items": items
 });
 
-const renderOrderedCollection = (id:string, items:Array<string>) => ({
+const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
   "@context": "https://www.w3.org/ns/activitystreams",
   "id": id,
   "type": "OrderedCollection",
@@ -175,7 +173,10 @@ const renderOrderedCollection = (id:string, items:Array<string>) => ({
   "orderedItems": items
 });
 
-export const getObject = async (id:string): Object | null => {
+export const getObject = async <T> (id:string): Promise<?T> => {
+
+  // TODO: Request-level cacheing to prevent redundant fetch or db lookups
+
   const domain = process.env.DOMAIN;
   if (!domain || !id.startsWith(domain)) {
     // Remote object, so fetch it

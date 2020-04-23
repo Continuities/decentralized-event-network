@@ -8,7 +8,9 @@
 import { getActivityId } from './activitypub.js';
 import { Actor, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
-import { Inbox, Outbox } from '../model/api.js'
+import { Inbox, Outbox } from '../model/api.js';
+
+import type { Activity$Document } from '../model/activitypub.js';
 
 export const getActorId = (username:string) => {
   return `${process.env.DOMAIN || ''}/user/${username}`;
@@ -45,13 +47,13 @@ export const getActivity = async (username:string, activityUUID:string): ?Object
 
 export const getFollowers = async (username:string): Promise<Array<string>> => {
   // TODO
-  // Follow ourselves for testing purposes
-  return [ getActorId(username) ];
+  console.log(`TODO: getFollowers for ${username}`)
+  return [ ];
 };
 
-export const getInbox = async (username:string): Promise<Array<string>> => {
+export const getInbox = async (username:string): Promise<Array<Activity$Document>> => {
   const entries:Array<Inbox> = await Inbox
-    .find({ from: getActorId(username) })
+    .find({ to: getActorId(username) })
     .sort({ 'published': -1 })
     .populate('activity');
 
@@ -59,7 +61,7 @@ export const getInbox = async (username:string): Promise<Array<string>> => {
   return entries.map(o => sanitized(o.activity)); 
 };
 
-export const getOutbox = async (username:string): Promise<Array<string>> => {
+export const getOutbox = async (username:string): Promise<Array<Activity$Document>> => {
   const entries:Array<Outbox> = await Outbox
     .find({ from: getActorId(username) })
     .sort({ 'published': -1 })

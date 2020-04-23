@@ -30,6 +30,7 @@ export class Activity$Document extends Object$Document {
   cc: ?[ string ];
   bto: ?[ string ];
   bcc: ?[ string ];
+  audience: ?[string];
   actor: string;
   published: string;
   object: string;

@@ -176,18 +176,8 @@ describe('User Controller', () => {
     it('should prevent creation without a token', async () => {
       const res = await chai
         .request(app.default)
-        .put('/api/user/dude/event')
+        .put('/api/user/event')
         .send(eventData);
-      chai.expect(res).to.have.status(401);
-    });
-
-    it('should prevent creation with the wrong token', async () => {
-      const token = await generateToken('Donny');
-      const res = await chai
-        .request(app.default)
-        .put('/api/user/dude/event')
-        .send(eventData)
-        .set('Authorization', `Bearer ${token}`);
       chai.expect(res).to.have.status(401);
     });
 
@@ -195,7 +185,7 @@ describe('User Controller', () => {
       const token = await generateToken('dude');
       const res = await chai
         .request(app.default)
-        .put('/api/user/dude/event')
+        .put('/api/user/event')
         .send(Object.assign({}, eventData, { 'name': '' }))
         .set('Authorization', `Bearer ${token}`);
       chai.expect(res).to.have.status(422);
@@ -207,7 +197,7 @@ describe('User Controller', () => {
       const token = await generateToken('dude');
       const res = await chai
         .request(app.default)
-        .put('/api/user/dude/event')
+        .put('/api/user/event')
         .send(Object.assign({}, eventData, { 'start': 'yesterday' }))
         .set('Authorization', `Bearer ${token}`);
       chai.expect(res).to.have.status(422);
@@ -219,7 +209,7 @@ describe('User Controller', () => {
       const token = await generateToken('dude');
       const res = await chai
         .request(app.default)
-        .put('/api/user/dude/event')
+        .put('/api/user/event')
         .send(Object.assign({}, eventData, { 'end': 'yesterday' }))
         .set('Authorization', `Bearer ${token}`);
       chai.expect(res).to.have.status(422);
@@ -231,7 +221,7 @@ describe('User Controller', () => {
       const token = await generateToken('dude');
       const res = await chai
         .request(app.default)
-        .put('/api/user/dude/event')
+        .put('/api/user/event')
         .send({
           name: 'Bowling',
           start: tomorrow.toISOString(),

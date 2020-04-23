@@ -27,7 +27,7 @@ export const useData = <T>(endpoint:string): ApiData<T> => {
       headers.Authorization = `Bearer ${auth}`
     }
 
-    const res = await fetch(endpoint, {
+    const res = await fetch(`/api/${endpoint}`, {
       method: 'GET',
       headers
     });

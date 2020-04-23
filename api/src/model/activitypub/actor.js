@@ -22,7 +22,7 @@ const Actor$Schema = new Object$Schema({
   }
 });
 
-class Actor$Document extends Object$Document {
+export class Actor$Document extends Object$Document {
   preferredUsername: string;
   name: string;
   inbox: string;

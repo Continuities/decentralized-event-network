@@ -11,20 +11,25 @@ import { navigate } from '@reach/router';
 import { Fab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Add as AddIcon } from '@material-ui/icons';
+import { withActivities, useFeed } from '../controller/UserProvider';
+import ActivityList from './ActivityList';
 
 const useStyles = makeStyles(theme => ({
   fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   }
 }));
 
-const Home = ({ user }: { user: string }) => {
+const Home = () => {
   const styles = useStyles();
+
+  const FeedList = withActivities(useFeed)(ActivityList);
+
   return (
     <React.Fragment>
-      {user}&apos;s homepage.
+      <FeedList />
       <Fab 
         className={styles.fab} 
         aria-label="Create event"

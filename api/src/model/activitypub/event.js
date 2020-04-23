@@ -15,7 +15,7 @@ const Event$Schema = new Object$Schema({
   endTime: Date
 });
 
-class Event$Document extends Object$Document {
+export class Event$Document extends Object$Document {
   name: string;
   attributedTo: string;
   startTime: string;
