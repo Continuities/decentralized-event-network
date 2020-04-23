@@ -61,7 +61,12 @@ const useStyles = makeStyles(theme => ({
     marginTop: 'auto'
   },
   content: {
-    width: '100%'
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  innerContent: {
+    flexGrow: 1
   }
 }));
 
@@ -146,10 +151,12 @@ const NavigationFrame = ({ title, children }: P) => {
           </Drawer>
         </Hidden>
       </nav>
-      <main className={styles.content}>
+      <section className={styles.content}>
         <div className={styles.toolbar} />
-        { children }
-      </main>
+        <div className={styles.innerContent}>
+          { children }
+        </div>
+      </section>
     </div>
   );
 };

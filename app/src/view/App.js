@@ -8,12 +8,16 @@
 
 import React from 'react';
 import { Router, Redirect } from "@reach/router";
+import jwtDecode from 'jwt-decode';
 import AuthProvider, { useAuth } from '../controller/AuthProvider';
+import { withProfile } from '../controller/UserProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
 import CreateEvent from './CreateEvent';
 import FourOhFour from './FourOhFour';
+import Profile from './Profile';
+import NavigationFrame from './NavigationFrame';
 import { 
   makeStyles, 
   createMuiTheme, 
@@ -28,9 +32,8 @@ const theme = createMuiTheme({
   palette: { type: 'dark' }
 });
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   main: {
-    padding: theme.spacing(2, 0),
     height: '100%',
     '& > div': { // Reach Router injects an unstylable div =(
       height: '100%'
@@ -43,29 +46,51 @@ const BaseRoute = () => {
   return <Redirect noThrow to={auth ? '/home' : '/login'} />;
 };
 
+const Main = ({ children }: { children: React$Node }) => {
+  const [ auth, ] = useAuth();
+
+  if (auth) {
+    return (
+      <NavigationFrame title={jwtDecode(auth).username}>
+        {children}
+      </NavigationFrame>
+    );
+  }
+
+  return children;
+};
+
 const App = () => {
   const styles = useStyles();
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
-        <Container 
-          className={styles.main} 
-          component="main" 
-          maxWidth="sm"
-        >
-          <CssBaseline />
-          <Router>
-            <BaseRoute path="/" />
-            <Home path="/home" />
-            <Login path="/login" />
-            <Register path="/register" />
-            <CreateEvent path="/create" />
-            <FourOhFour default />
-          </Router>
-        </Container>
+        <CssBaseline />
+        <Main>
+          <Container 
+            className={styles.main} 
+            component="main" 
+            maxWidth="sm"
+          >
+            <Router>
+              <BaseRoute path="/" />
+              <Home path="/home" />
+              <Login path="/login" />
+              <Register path="/register" />
+              <CreateEvent path="/create" />
+              <ProfilePage path="/user/:username" />
+              <FourOhFour default />
+            </Router>
+          </Container>
+        </Main>
       </AuthProvider>
     </ThemeProvider>
   );
 };
+
+const ProfilePage = ({ username }: { username?: string }) => {
+  const Page = withProfile(username)(Profile);
+  return <Page />
+}
 
 export default App;

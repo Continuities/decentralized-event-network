@@ -8,7 +8,6 @@
 import React from 'react';
 import { requireUser } from '../controller/AuthProvider';
 import { navigate } from '@reach/router';
-import NavigationFrame from './NavigationFrame';
 import { Fab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Add as AddIcon } from '@material-ui/icons';
@@ -24,7 +23,8 @@ const useStyles = makeStyles(theme => ({
 const Home = ({ user }: { user: string }) => {
   const styles = useStyles();
   return (
-    <NavigationFrame title={user}>
+    <React.Fragment>
+      {user}&apos;s homepage.
       <Fab 
         className={styles.fab} 
         aria-label="Create event"
@@ -32,7 +32,7 @@ const Home = ({ user }: { user: string }) => {
       >
         <AddIcon />
       </Fab>
-    </NavigationFrame>
+    </React.Fragment>
   );
 };
 

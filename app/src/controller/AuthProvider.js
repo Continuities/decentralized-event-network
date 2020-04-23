@@ -1,6 +1,5 @@
 /**
  * Context provider for authorization
- * TODO: Persist auth in localstorage
  * @author mtownsend
  * @since April 2020
  * @flow
