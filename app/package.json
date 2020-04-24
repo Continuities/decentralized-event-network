@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --config webpack.config.cjs --mode development --devtool inline-source-map --hot",
+    "start": "webpack-dev-server --config webpack.config.cjs --mode development --devtool inline-source-map --hot $EXTRA_WEBPACK_DEV_SERVER_ARGS",
     "build": "webpack --config webpack.config.cjs --mode=production"
   },
   "browserslist": "> 5%, not dead",
