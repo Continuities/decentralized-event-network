@@ -17,32 +17,8 @@ export type ProfileData = {
 };
 
 type ActivityData = {|
-  activities: Array<ApiActivity>
+  activities: Array<api$Activity>
 |};
-
-// TODO: Find a way to share these models between the app and api codebase
-export type ApiUser = {|
-  name: string,
-  url: string
-|};
-
-export type ApiActivity = {|
-  url: string,
-  type: string,
-  user: ApiUser,
-  published: string,
-  object: ApiObject
-|};
-
-export type ApiEvent = {|
-  type: 'Event',
-  name: string,
-  host: ApiUser,
-  start: string,
-  end: string
-|};
-
-export type ApiObject = ApiEvent;
 
 type HOC<C: React$ComponentType<*>> = (C) => React$ComponentType<React$ElementConfig<C>>
 

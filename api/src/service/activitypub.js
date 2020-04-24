@@ -5,7 +5,7 @@
  * @flow
  */
 
-import { Event, Activity, Object$Document } from '../model/activitypub.js';
+import { Event, Activity } from '../model/activitypub.js';
 import { getActor, getActivity, getFollowers, getOutbox } from './user.js';
 import { getEvent } from './event.js';
 import { getActorId } from './user.js';
@@ -14,7 +14,7 @@ import { Inbox, Outbox } from '../model/api.js';
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
-import type { Activity$Document } from '../model/activitypub.js';
+import type { Object$Document } from '../model/activitypub.js';
 
 export const getActivityId = (user:string, uuid:string) => {
   return `${getActorId(user)}/activities/${uuid}`
@@ -28,7 +28,7 @@ export type ObjectJson = {
   id: string
 } & Object;
 
-export const toInbox = async (username:string, activity:Activity$Document) => {
+export const toInbox = async (username:string, activity:Activity) => {
   // TODO: Handle forward-from-inbox https://www.w3.org/TR/activitypub/#inbox-forwarding
   // TODO: Possibly store local copies of external activities?
   let dbActivity = await Activity.findOne({ id: activity.id });
@@ -43,7 +43,7 @@ export const toInbox = async (username:string, activity:Activity$Document) => {
   }
   const entry = new Inbox({
     to: getActorId(username),
-    published: dbActivity.published,
+    published: dbActivity.published || new Date().toISOString(),
     activity: dbActivity._id
   });
   return entry.save();
@@ -51,14 +51,14 @@ export const toInbox = async (username:string, activity:Activity$Document) => {
 
 // Submit an activity to an actor's outbox. Currently called by the REST api
 // during POST, but could be easily modified to allow direct client-server ActivityPub
-export const toOutbox = async (username:string, activity:Activity$Document):Promise<void> => {
+export const toOutbox = async (username:string, activity:$Shape<Activity>):Promise<void> => {
   // TODO: Validate that the activity's actor matches the username
   activity.id = getActivityId(username, uuid.generate());
   let createdActivity;
   switch (activity.type.toLowerCase()) {
   case 'create': {
     // Replace the object in the activity with a reference
-    if (typeof activity.object === 'object') {
+    if (typeof activity.object !== 'string') {
       const newObject = await saveObject(activity.object);
       if (!newObject) { return; }
       activity.object = newObject;
@@ -74,14 +74,14 @@ export const toOutbox = async (username:string, activity:Activity$Document):Prom
 
   await new Outbox({
     from: getActorId(username),
-    published: createdActivity.published,
+    published: createdActivity.published || new Date().toISOString(),
     activity: createdActivity._id
   }).save();
 
   return publish(activity);
 };
 
-const publish = async (activity:Activity$Document):Promise<void> => {
+const publish = async (activity:Activity):Promise<void> => {
 
   // TODO: Don't resolve collections belonging to others https://www.w3.org/TR/activitypub/#outbox-delivery
 
@@ -103,7 +103,7 @@ const publish = async (activity:Activity$Document):Promise<void> => {
   await Promise.all(completionPromises);
 };
 
-const saveObject = async (object:ObjectJson):Promise<?string> => {
+const saveObject = async (object:Object$Document):Promise<?string> => {
   // TODO: Implement the rest of the relevant object types
   let createdObject:?Object$Document;
   switch (object.type.toLowerCase()) {
@@ -173,7 +173,9 @@ const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
   "orderedItems": items
 });
 
-export const getObject = async <T> (id:string): Promise<?T> => {
+// TODO: Not sure I like this pattern. Feels like a shitty replacement
+// for express routes, and I'm losing Flow typing.
+export const getObject = async (id:string): Promise<?any> => {
 
   // TODO: Request-level cacheing to prevent redundant fetch or db lookups
 

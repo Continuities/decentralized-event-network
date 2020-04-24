@@ -5,7 +5,7 @@
  * @flow
  */
 
-import { Event } from '../model/activitypub.js';
+import { Event, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
 import uuid from 'short-uuid';
 import { getActorId } from './user.js';
@@ -24,7 +24,6 @@ export const createEvent = (name:string, username:string, start:Date, end:Date):
   const eventId = getEventId(uuid.generate());
   const hostId = getActorId(username);
   const asyncAction = toOutbox(username, {
-    "@context": "https://www.w3.org/ns/activitystreams",
     "type": "Create",
     "to": [ 
       // TODO: Event privacy settings

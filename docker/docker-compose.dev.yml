@@ -26,6 +26,7 @@ services:
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
     volumes:
       - ../app:/opt/app
+      - ../api-model:/opt/api-model # To see the symlinked libdefs in the container
     ports:
       - 3000:3000 # For docker to now where to redirect HMR queries
 

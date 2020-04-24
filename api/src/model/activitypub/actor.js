@@ -10,7 +10,6 @@ import { Object$Schema, Object$Document } from './object.js';
 
 const Actor$Schema = new Object$Schema({
   preferredUsername: String,
-  name: { type: String, unique: true, index:true },
   inbox: String,
   outbox: String,
   followers: String,
@@ -22,9 +21,8 @@ const Actor$Schema = new Object$Schema({
   }
 });
 
-export class Actor$Document extends Object$Document {
+class Actor$Document extends Object$Document {
   preferredUsername: string;
-  name: string;
   inbox: string;
   outbox: string;
   followers: string;
@@ -35,6 +33,10 @@ export class Actor$Document extends Object$Document {
     publicKeyPem: string
   };
 }
+
+Actor$Schema.pre('save', function() {
+  this['@context'].push('https://w3id.org/security/v1');
+});
 
 Actor$Schema.loadClass(Actor$Document);
 

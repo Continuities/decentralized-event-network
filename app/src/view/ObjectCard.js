@@ -14,7 +14,6 @@ import {
 } from '@material-ui/core';
 import { Event as EventIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import type { ApiObject } from '../controller/UserProvider';
 
 
 const timeString = (dateString:string) => {
@@ -33,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type P = {|
-  object: ApiObject
+  object: api$Object
 |};
 
 // TODO: Support other relevant object types

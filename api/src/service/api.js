@@ -6,31 +6,7 @@
  */
 
 import { getObject } from './activitypub.js';
-import type { Activity$Document, Event$Document, Actor$Document } from '../model/activitypub.js';
-
-export type ApiUser = {|
-  name: string,
-  url: string
-|};
-
-export type ApiActivity = {|
-  type: string,
-  url: string,
-  user: ApiUser,
-  published: string,
-  object: ApiObject
-|};
-
-export type ApiEvent = {|
-  type: 'Event',
-  name: string,
-  host: ApiUser,
-  start: string,
-  end: string
-|};
-
-// TODO: Support other relevant object types
-type ApiObject = ApiEvent;
+import type { Activity, Event, Actor } from '../model/activitypub.js';
 
 const resolve = async <T>(thing:T | string): Promise<?T> => {
   if (typeof thing === 'string') {
@@ -39,7 +15,7 @@ const resolve = async <T>(thing:T | string): Promise<?T> => {
   return thing;
 };
 
-export const mapUser = (json:?Actor$Document):?ApiUser => {
+export const mapUser = (json:?Actor):?api$User => {
   if (!json) {
     return null;
   }
@@ -49,7 +25,7 @@ export const mapUser = (json:?Actor$Document):?ApiUser => {
   };
 };
 
-export const mapActivity = async (json:?Activity$Document):Promise<?ApiActivity> => {
+export const mapActivity = async (json:?Activity):Promise<?api$Activity> => {
 
   if (!json) {
     return null;
@@ -74,12 +50,12 @@ export const mapActivity = async (json:?Activity$Document):Promise<?ApiActivity>
     type: json.type,
     url: String(json.id),
     user,
-    published: json.published,
+    published: json.published || new Date().toISOString(),
     object
   };
 };
 
-export const mapObject = async (json:?Event$Document):Promise<?ApiObject> => {
+export const mapObject = async (json:?Event):Promise<?api$Object> => {
 
   if (!json) {
     return null;
@@ -99,9 +75,9 @@ export const mapObject = async (json:?Event$Document):Promise<?ApiObject> => {
 
   return {
     type: 'Event',
-    name: json.name,
+    name: json.name || '',
     host: actor,
-    start: json.startTime,
-    end: json.endTime
+    start: json.startTime || new Date().toISOString(),
+    end: json.endTime || new Date().toISOString()
   };
 };

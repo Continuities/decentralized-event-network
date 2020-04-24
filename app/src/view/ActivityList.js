@@ -9,10 +9,8 @@ import React from 'react';
 import { List, ListItem } from '@material-ui/core';
 import Activity from './Activity';
 
-import type { ApiActivity } from '../controller/UserProvider';
-
 type P = {|
-  activities: Array<ApiActivity>
+  activities: Array<api$Activity>
 |};
 
 const ActivityList = ({ activities }: P) => {

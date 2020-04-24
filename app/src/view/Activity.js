@@ -13,10 +13,8 @@ import {
 } from '@material-ui/core';
 import ObjectCard from './ObjectCard';
 
-import type { ApiActivity } from '../controller/UserProvider';
-
 type P = {|
-  activity: ApiActivity
+  activity: api$Activity
 |};
 
 const verbMap = {
