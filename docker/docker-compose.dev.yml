@@ -23,6 +23,7 @@ services:
     image: den-app
     environment:
       - NODE_ENV=development
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
     volumes:
       - ../app:/opt/app
     ports:
