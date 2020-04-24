@@ -78,6 +78,7 @@ const App = () => {
               <Login path="/login" />
               <Register path="/register" />
               <CreateEvent path="/create" />
+              <AtUser path="/@/:username" />
               <ProfilePage path="/user/:username" />
               <FourOhFour default />
             </Router>
@@ -87,6 +88,10 @@ const App = () => {
     </ThemeProvider>
   );
 };
+
+const AtUser = ({ username }: {username?: string }) => (
+  <Redirect to={`/user/${username || ''}`} noThrow />
+);
 
 const ProfilePage = ({ username }: { username?: string }) => {
   const Page = withProfile(username)(Profile);
