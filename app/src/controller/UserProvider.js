@@ -9,12 +9,7 @@ import React from 'react';
 import { useData } from './ApiProvider';
 import FourOhFour from '../view/FourOhFour';
 
-import type { ApiData } from './ApiProvider';
-
-export type ProfileData = {
-  name: string,
-  displayName: string
-};
+import type { GetData } from './ApiProvider';
 
 type ActivityData = {|
   activities: Array<api$Activity>
@@ -22,7 +17,7 @@ type ActivityData = {|
 
 type HOC<C: React$ComponentType<*>> = (C) => React$ComponentType<React$ElementConfig<C>>
 
-type ActivityProvider = () => ApiData<ActivityData>;
+type ActivityProvider = () => GetData<ActivityData>;
 export const useInbox = () => useData<ActivityData>('user/inbox');
 export const useOutbox = (username?:string) => useData<ActivityData>(username ? `user/${username}/outbox`: 'user/outbox');
 export const useFeed = () => useData<ActivityData>('user/feed');
@@ -45,7 +40,7 @@ export const withProfile = <C: React$ComponentType<*>>(username:?string):HOC<C> 
     if (!username) {
       return <FourOhFour />
     }
-    const data:ApiData<ProfileData> = useData(`user/${username}`);
+    const data:GetData<api$User> = useData(`user/${username}`);
     if (data === 'LOADING') {
       return <div>LOADING...</div>;
     }

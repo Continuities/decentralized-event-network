@@ -8,13 +8,51 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
 
-type FetchError = number;
+type GetError = number;
+type GetState = 'LOADING' | GetError;
+export type GetData<T> = GetState | T;
 
-type FetchState = 'LOADING' | FetchError;
+type PostState<T> = {|
+  loading: boolean,
+  value:T
+|};
 
-export type ApiData<T> = FetchState | T;
+export const useRemoteState = <T>(endpoint:string, initialValue:T): [ PostState<T>, T => Promise<void> ] => {
+  const [ state, setState ] = useState({ loading: false, value: initialValue });
+  const [ auth, ] = useAuth();
 
-export const useData = <T>(endpoint:string): ApiData<T> => {
+  const setRemote = async (value:T) => {
+    const headers:{ [string]: string } = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+    if (auth) {
+      headers.Authorization = `Bearer ${auth}`
+    }
+
+    setState({ loading: true, value: state.value });
+
+    const res = await fetch(`/api/${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ value })
+    });
+
+    if (!res.ok) {
+      setState({ loading: false, value: state.value });
+      return;
+    }
+
+    const json = await res.json();
+    
+    setState({ loading: false, value: json.value });
+  };
+
+  return [ state, setRemote ];
+};
+
+export const useData = <T>(endpoint:string): GetData<T> => {
   const [ data, setData ] = useState('LOADING');
   const [ auth, ] = useAuth();
 

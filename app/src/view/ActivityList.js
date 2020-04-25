@@ -13,11 +13,11 @@ type P = {|
   activities: Array<api$Activity>
 |};
 
-const ActivityList = ({ activities }: P) => {
+const ActivityList = ({ activities, ...props }: P) => {
   return (
-    <List>
+    <List {...props}>
       { activities.map(a => (
-        <ListItem key={Math.random()}>
+        <ListItem disableGutters key={Math.random()}>
           <Activity activity={a} />
         </ListItem>
       ))}

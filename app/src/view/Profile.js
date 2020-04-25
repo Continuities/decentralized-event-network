@@ -6,19 +6,29 @@
  */
 
 import React from 'react';
-import type { ProfileData } from '../controller/UserProvider';
+import { makeStyles } from '@material-ui/core/styles';
+import { withActivities, useOutbox } from '../controller/UserProvider';
+import ActivityList from './ActivityList';
+import ProfileCard from './ProfileCard';
 
 type P = {
-  profile: ProfileData
+  profile: api$User
 };
 
-const Profile = ({ profile }: P) => {
+const useStyles = makeStyles(() => ({
+  feed: {
+    
+  }
+}));
 
+const Profile = ({ profile }: P) => {
+  const styles = useStyles
+  const FeedList = withActivities(useOutbox.bind(null, profile.name))(ActivityList);
   return (
-    <div>
-      <div>TODO: {profile.name}&apos;s profile</div>
-      <div>TODO: Display outbox</div>
-    </div>
+    <React.Fragment>
+      <ProfileCard user={ profile } />
+      <FeedList className={styles.feed} />
+    </React.Fragment>
   );
 }
 

@@ -78,7 +78,8 @@ const App = () => {
               <Login path="/login" />
               <Register path="/register" />
               <CreateEvent path="/create" />
-              <AtUser path="/@/:username" />
+              {/* TODO: Why this no work? */}
+              <AtUser path="/@:username" />
               <ProfilePage path="/user/:username" />
               <FourOhFour default />
             </Router>

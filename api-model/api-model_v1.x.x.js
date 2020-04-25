@@ -1,17 +1,40 @@
 // @flow
 
+// TODO: Support requested state
+declare type api$FollowState = 
+  'following' | 
+  'can-follow';
+
 declare type api$User = {|
+  type: 'Person',
   name: string,
-  url: string
+  url: string,
+  following:?api$FollowState
 |};
 
-declare type api$Activity = {|
-  type: string,
+type BaseActivity = {|
   url: string,
   user: api$User,
-  published: string,
-  object: api$Object
+  published: string
 |};
+
+declare type api$FollowActivity = {|
+  type: 'Follow',
+  object: api$User,
+  url: string,
+  user: api$User,
+  published: string
+|};
+
+declare type api$CreateActivity = {|
+  type: 'Create',
+  object: api$Event,
+  url: string,
+  user: api$User,
+  published: string
+|};
+
+declare type api$Activity =  api$FollowActivity | api$CreateActivity;
 
 declare type api$Event = {|
   type: 'Event',
@@ -22,4 +45,4 @@ declare type api$Event = {|
 |};
 
 // TODO: Disjoint union when we add more object types
-declare type api$Object = api$Event;
+declare type api$Object = api$Event | api$User;

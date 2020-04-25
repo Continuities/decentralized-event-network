@@ -18,6 +18,10 @@ class Outbox$Document /* :: extends Mongoose$Document */ {
   from: string;
   published: string;
   activity: bson$ObjectId | string | number | Activity;
+  static async removeActivity(activityId: bson$ObjectId | string | number) {
+    const toRemove = await Outbox.find({ activity: activityId });
+    return Promise.all(toRemove.map(item => item.remove()));
+  }
 }
 
 Outbox$Schema.loadClass(Outbox$Document);

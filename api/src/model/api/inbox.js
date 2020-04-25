@@ -17,6 +17,10 @@ class Inbox$Document /* :: extends Mongoose$Document */ {
   to: string;
   published: string;
   activity: bson$ObjectId | string | number;
+  static async removeActivity(activityId: bson$ObjectId | string | number) {
+    const toRemove = await Inbox.find({ activity: activityId });
+    return Promise.all(toRemove.map(item => item.remove()));
+  }
 }
 
 Inbox$Schema.loadClass(Inbox$Document);

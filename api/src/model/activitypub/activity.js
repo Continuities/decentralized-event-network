@@ -21,7 +21,7 @@ Activity$Schema.pre('save', async function() {
 
 class Activity$Document extends Object$Document {
   actor: string;
-  object: string | $Shape<Object$Document>;
+  object: string | $Shape<Object$Document> | $Shape<Activity$Document>;
 }
 
 Activity$Schema.loadClass(Activity$Document);

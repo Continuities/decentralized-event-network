@@ -8,7 +8,8 @@
 import { getActivityId } from './activitypub.js';
 import { Actor, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
-import { Inbox, Outbox } from '../model/api.js';
+import { Inbox, Outbox, Follower } from '../model/api.js';
+import { toOutbox } from './activitypub.js';
 
 export const getActorId = (username:string) => {
   return `${process.env.DOMAIN || ''}/user/${username}`;
@@ -44,10 +45,14 @@ export const getActivity = async (username:string, activityUUID:string): Promise
 }
 
 export const getFollowers = async (username:string): Promise<Array<string>> => {
-  // TODO
-  console.log(`TODO: getFollowers for ${username}`)
-  return [ ];
+  const followers = await Follower.find({ followee: getActorId(username) });
+  return followers.map(f => f.follower);
 };
+
+export const getFollowing = async (username:string): Promise<Array<string>> => {
+  const following = await Follower.find({ follower: getActorId(username) });
+  return following.map(f => f.followee);
+}
 
 export const getInbox = async (username:string): Promise<Array<Activity>> => {
   const entries:Array<Inbox> = await Inbox
@@ -67,4 +72,54 @@ export const getOutbox = async (username:string): Promise<Array<Activity>> => {
 
   // $FlowFixMe Not sure how to handle populated fields in Flow
   return entries.map(o => sanitized(o.activity)); 
+};
+
+export const addFollower = async (followeeName:?string, followerName:?string) => {
+  if (!followeeName || !followerName) {
+    return;
+  }
+
+  const followee = getActorId(followeeName);
+  const follower = getActorId(followerName);
+
+  const follows = await Follower.findOne({ followee, follower });
+  if (follows) {
+    // Already a follower
+    return follows;
+  }
+
+  return await toOutbox(followerName, {
+    type: 'Follow',
+    to: [ followee ],
+    actor: follower,
+    object: followee
+  });
+};
+
+export const removeFollower = async (followeeName:?string, followerName:?string) => {
+  if (!followeeName || !followerName) {
+    return;
+  }
+
+  const followee = getActorId(followeeName);
+  const follower = getActorId(followerName);
+
+  const followActivity = await Activity.findOne({ 
+    type: 'Follow',
+    actor: follower,
+    object: followee
+  });
+
+  if (!followActivity) {
+    // Not a follower
+    return;
+  }
+
+  toOutbox(followerName, {
+    type: 'Undo',
+    to: [ followee ],
+    actor: follower,
+    object: String(followActivity.id)
+  });
+
 };

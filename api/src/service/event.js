@@ -5,7 +5,7 @@
  * @flow
  */
 
-import { Event, Activity } from '../model/activitypub.js';
+import { Event } from '../model/activitypub.js';
 import { sanitized } from './db.js';
 import uuid from 'short-uuid';
 import { getActorId } from './user.js';
@@ -21,8 +21,8 @@ export const getEvent = async (eventUUID:string): ?Object => {
 }
 
 export const createEvent = (name:string, username:string, start:Date, end:Date): [ string, Promise<void> ] => {
-  const eventId = getEventId(uuid.generate());
-  const hostId = getActorId(username);
+  const eventId:string = getEventId(uuid.generate());
+  const hostId:string = getActorId(username);
   const asyncAction = toOutbox(username, {
     "type": "Create",
     "to": [ 
@@ -35,8 +35,8 @@ export const createEvent = (name:string, username:string, start:Date, end:Date):
       "id": eventId,
       "name": name,
       "attributedTo": hostId,
-      "startTime": start.toISOString(),
-      "endTime": end.toISOString()
+      "startTime": (start.toISOString():string),
+      "endTime": (end.toISOString():string)
       // TODO: implement locations
     }
   });

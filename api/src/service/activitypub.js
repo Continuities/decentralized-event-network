@@ -6,11 +6,17 @@
  */
 
 import { Event, Activity } from '../model/activitypub.js';
-import { getActor, getActivity, getFollowers, getOutbox } from './user.js';
+import { 
+  getActor, 
+  getActivity, 
+  getFollowers, 
+  getFollowing,
+  getOutbox 
+} from './user.js';
 import { getEvent } from './event.js';
 import { getActorId } from './user.js';
 
-import { Inbox, Outbox } from '../model/api.js';
+import { Inbox, Outbox, Follower } from '../model/api.js';
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
@@ -20,17 +26,91 @@ export const getActivityId = (user:string, uuid:string) => {
   return `${getActorId(user)}/activities/${uuid}`
 };
 
-// TODO: Support other relevant Activity types
+const addFollower = async (followeeId:string, followerId:string) => {
+  const existing = await Follower.findOne({
+    followee: followeeId, 
+    follower: followerId
+  });
 
-// TODO: Support other relevant Object types
-export type ObjectJson = {
-  type: "Event",
-  id: string
-} & Object;
+  if (existing) { 
+    // Don't insert duplicate records
+    return; 
+  }
+
+  return new Follower({ 
+    followee: followeeId, 
+    follower: followerId
+  }).save();
+};
+
+const undoActivity = async (activityId:string) => {
+  const undone = await Activity.findOneAndDelete({ id: activityId });
+  if (!undone) {
+    return;
+  }
+
+  const ops = [
+    // Remove from in/outboxes
+    Inbox.removeActivity(undone._id),
+    Outbox.removeActivity(undone._id)
+  ];
+
+  // Undo side-effects
+  // TODO: It'd be nice to factor activity side-effects to somewhere
+  //       central to keep all the logic together
+  if (undone.type === 'Follow') {
+    ops.push(Follower.deleteOne({ 
+      followee: undone.object, 
+      follower: undone.actor
+    }));
+  }
+
+  return Promise.all(ops);
+}
 
 export const toInbox = async (username:string, activity:Activity) => {
   // TODO: Handle forward-from-inbox https://www.w3.org/TR/activitypub/#inbox-forwarding
-  // TODO: Possibly store local copies of external activities?
+
+  switch (activity.type.toLowerCase()) {
+  case 'follow': {
+    // https://www.w3.org/TR/activitypub/#follow-activity-inbox
+    toOutbox(username, {
+      type: 'Accept',
+      actor: getActorId(username),
+      to: [ activity.actor ],
+      object: activity
+    });
+    await addFollower(
+      getActorId(username),
+      activity.actor
+    );
+    break;
+  }
+  case 'accept': {
+    const acceptedActivity = await getObject(activity.object);
+    if (!acceptedActivity) {
+      return;
+    }
+    switch (acceptedActivity.type.toLowerCase()) {
+    case 'follow': {
+      await addFollower(
+        acceptedActivity.object, 
+        acceptedActivity.actor
+      );
+      break;
+    }
+    }
+    break;
+  }
+  case 'undo': {
+    // Instead of saving a new activity, these remove an old one
+    const undoneId = typeof activity.object === 'string' ? activity.object : String(activity.object.id);
+    await undoActivity(undoneId);
+    return;
+  }
+  // TODO side-effects for other activity types
+  }
+
   let dbActivity = await Activity.findOne({ id: activity.id });
   if (!String(activity.id).startsWith(process.env.DOMAIN || '')) {
     // Store a copy the first time we see a remote activity
@@ -39,8 +119,9 @@ export const toInbox = async (username:string, activity:Activity) => {
   if (!dbActivity) {
     // This means it's a local activity that isn't stored.
     // This shouldn't happen, so just abort.
-    throw 'Non-existent local activity delivered to an invox =/';
+    throw 'Non-existent local activity delivered to an inbox =/';
   }
+
   const entry = new Inbox({
     to: getActorId(username),
     published: dbActivity.published || new Date().toISOString(),
@@ -65,8 +146,27 @@ export const toOutbox = async (username:string, activity:$Shape<Activity>):Promi
       createdActivity = await new Activity(activity).save();
     }
     break;
-    // TODO: Implement the rest of the relevant activity types
-  }}
+  }
+  case 'follow': {
+    createdActivity = await new Activity(activity).save();
+    break;
+  }
+  case 'accept': {
+    if (typeof activity.object !== 'string') {
+      // Replace full object with its id
+      activity.object = String(activity.object.id);
+    }
+    createdActivity = await new Activity(activity).save();
+    break;
+  }
+  case 'undo': {
+    // Instead of saving a new activity, these remove an old one
+    const undoneId = typeof activity.object === 'string' ? activity.object : String(activity.object.id);
+    await undoActivity(undoneId);
+    return publish(activity);
+  }
+  // TODO: Implement the rest of the relevant activity types
+  }
 
   if (!createdActivity) {
     return;
@@ -175,7 +275,11 @@ const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
 
 // TODO: Not sure I like this pattern. Feels like a shitty replacement
 // for express routes, and I'm losing Flow typing.
-export const getObject = async (id:string): Promise<?any> => {
+export const getObject = async (id:string | Object): Promise<?any> => {
+
+  if (typeof id === 'object') {
+    return id;
+  }
 
   // TODO: Request-level cacheing to prevent redundant fetch or db lookups
 
@@ -214,6 +318,10 @@ export const getObject = async (id:string): Promise<?any> => {
     else if (rest.length === 2 && rest[1] === 'followers') {
       // Followers request
       return renderCollection(id, await getFollowers(rest[0]));
+    }
+    else if (rest.length === 2 && rest[1] === 'following') {
+      // Following request
+      return renderCollection(id, await getFollowing(rest[0]));
     }
     else if (rest.length === 2 && rest[1] === 'outbox') {
       // User outbox request

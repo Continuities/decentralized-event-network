@@ -35,8 +35,7 @@ type P = {|
   object: api$Object
 |};
 
-// TODO: Support other relevant object types
-const ObjectCard = ({ object }: P) => {
+const EventCard = ({ event }: { event: api$Event }) => {
   const styles = useStyles();
   return (
     <Card>
@@ -45,17 +44,25 @@ const ObjectCard = ({ object }: P) => {
       </Box>
       <CardContent>
         <Typography gutterBottom variant="h5" component="h2">
-          { object.name }
+          { event.name }
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          Starts {timeString(object.start)}
+          Starts {timeString(event.start)}
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          Ends {timeString(object.end)}
+          Ends {timeString(event.end)}
         </Typography>
       </CardContent>
     </Card>
   );
+};
+
+const ObjectCard = ({ object }: P) => {
+  switch (object.type) {
+  case 'Event': return <EventCard event={(object:api$Event)} />
+  // TODO: Support other relevant object types
+  }
+  return null;
 }
 
 export default ObjectCard;

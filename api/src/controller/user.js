@@ -8,10 +8,17 @@
 import express from 'express';
 import v from 'express-validator';
 import User from '../model/api/user.js';
-import { newUser, getInbox, getOutbox } from '../service/user.js';
+import { 
+  getActor, 
+  newUser, 
+  getInbox, 
+  getOutbox,
+  addFollower,
+  removeFollower
+} from '../service/user.js';
 import { createEvent } from '../service/event.js';
 import generateRSAKeypair from 'generate-rsa-keypair';
-import { mapActivity } from '../service/api.js';
+import { mapActivity, mapUser } from '../service/api.js';
 import { 
   withAuthentication,
   validatePassword, 
@@ -63,15 +70,6 @@ router.post('/token', async (req, res) => {
   res.json({ token: generateToken(userObject.username) });
 });
 
-// Some private user data. This is a placeholder endpoint.
-// Returns 401 if the requestor is not authenticated as the specified user
-router.get('/:username/private', withAuthentication, (req, res) => {
-  if (!req.user || req.user.username !== req.params.username) {
-    return res.sendStatus(401);
-  }
-  res.sendStatus(200);
-});
-
 const mergeSortedActivities = (listA, listB) => {
   const merged = [];
   
@@ -117,8 +115,8 @@ router.get('/inbox', withAuthentication, async (req, res) => {
     return res.sendStatus(401);
   }
   const activities = await getInbox(req.user.username);
-  const mapped = await Promise.all(activities.map(mapActivity).filter(a => !!a));
-  res.json({ activities: mapped });
+  const mapped = await Promise.all(activities.map(mapActivity));
+  res.json({ activities: mapped.filter(Boolean) });
 });
 
 const outbox = async (req, res) => {
@@ -128,9 +126,9 @@ const outbox = async (req, res) => {
     return res.sendStatus(404);
   }
   const activities = await getOutbox(user);
-  const mapped = await Promise.all(activities.map(mapActivity).filter(a => !!a));
+  const mapped = await Promise.all(activities.map(mapActivity));
   // TODO: Filter based on privacy
-  res.json({ activities: mapped });
+  res.json({ activities: mapped.filter(Boolean) });
 };
 
 router.get('/:username/outbox', outbox);
@@ -207,5 +205,41 @@ router.put('/:username',
     });
   }
 );
+
+router.post('/:username/follow', 
+  withAuthentication,
+  v.check('value').isBoolean(),
+  async (req, res) => {
+
+    const errors = v.validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+
+    const follow:boolean = (req.body:Object).value;
+
+    if (follow) {
+      await addFollower(req.params.username, req.user.username);
+    }
+    else {
+      await removeFollower(req.params.username, req.user.username);
+    }
+
+    res.status(201).json({ value: follow });
+  }
+);
+
+// Get a user's profile data
+router.get('/:username', withAuthentication, async (req, res) => {
+  const actor = await getActor(req.params.username);
+  if (!actor) {
+    return res.sendStatus(404);
+  }
+  res.json(await mapUser(actor, req.user ? req.user.username : null));
+});
 
 export default router;

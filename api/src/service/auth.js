@@ -36,14 +36,12 @@ export const generateToken = (username:string) => {
 export const withAuthentication:Middleware<AuthenticatedRequest> = async (req, res, next:express$NextFunction) => {
   try {
     const [ authType, token ] = req.headers.authorization.split(' ');
-    if (authType.toLowerCase() !== 'bearer' || !token) {
-      return res.sendStatus(401);
+    if (authType.toLowerCase() === 'bearer' && token) {
+      const user = await jwt.verify(token, process.env.TOKEN_SECRET);
+      req.user = user;
     }
-    const user = await jwt.verify(token, process.env.TOKEN_SECRET);
-    req.user = user;
-    next();
   }
-  catch(e) {
-    return res.sendStatus(401);
-  }
+  catch(e) { /* Bad auth header */ }
+  
+  next();
 };
