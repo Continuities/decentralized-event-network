@@ -11,12 +11,14 @@ import { Router, Redirect } from "@reach/router";
 import jwtDecode from 'jwt-decode';
 import AuthProvider, { useAuth } from '../controller/AuthProvider';
 import { withProfile } from '../controller/UserProvider';
+import { withEvent } from '../controller/EventProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
 import CreateEvent from './CreateEvent';
 import FourOhFour from './FourOhFour';
 import Profile from './Profile';
+import Event from './Event';
 import NavigationFrame from './NavigationFrame';
 import { 
   makeStyles, 
@@ -81,6 +83,7 @@ const App = () => {
               {/* TODO: Why this no work? */}
               <AtUser path="/@:username" />
               <ProfilePage path="/user/:username" />
+              <EventPage path="/event/:eventId" />
               <FourOhFour default />
             </Router>
           </Container>
@@ -96,7 +99,12 @@ const AtUser = ({ username }: {username?: string }) => (
 
 const ProfilePage = ({ username }: { username?: string }) => {
   const Page = withProfile(username)(Profile);
-  return <Page />
-}
+  return <Page />;
+};
+
+const EventPage = ({ eventId }: {eventId?: string }) => {
+  const Page = withEvent(eventId)(Event);
+  return <Page />;
+};
 
 export default App;

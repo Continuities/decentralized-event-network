@@ -18,30 +18,35 @@ type BaseActivity = {|
   published: string
 |};
 
+declare type api$JoinActivity = {|
+  type: 'Join',
+  object: api$Event,
+  ...BaseActivity
+|};
+
 declare type api$FollowActivity = {|
   type: 'Follow',
   object: api$User,
-  url: string,
-  user: api$User,
-  published: string
+  ...BaseActivity
 |};
 
 declare type api$CreateActivity = {|
   type: 'Create',
   object: api$Event,
-  url: string,
-  user: api$User,
-  published: string
+  ...BaseActivity
 |};
 
-declare type api$Activity =  api$FollowActivity | api$CreateActivity;
+declare type api$Activity =  api$FollowActivity | api$CreateActivity | api$JoinActivity;
 
 declare type api$Event = {|
   type: 'Event',
+  id: string,
   name: string,
+  url: string,
   host: api$User,
   start: string,
-  end: string
+  end: string,
+  attending: boolean
 |};
 
 // TODO: Disjoint union when we add more object types

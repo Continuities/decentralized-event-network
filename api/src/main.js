@@ -4,6 +4,7 @@ import express from 'express';
 import multer from 'multer';
 import dotenv from 'dotenv';
 import UserController from './controller/user.js';
+import EventController from './controller/event.js';
 import ActivityPubController from './controller/activitypub.js';
 
 dotenv.config();
@@ -22,6 +23,13 @@ app.use('/api/user',
     next();
   },
   UserController);
+
+app.use('/api/event',
+  (req, res, next:express$NextFunction) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  },
+  EventController);
 
 app.use('/', ActivityPubController);
 

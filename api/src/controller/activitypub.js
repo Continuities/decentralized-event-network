@@ -8,6 +8,7 @@
 import express from 'express';
 import url from 'url';
 import { getObject, toInbox } from '../service/activitypub.js';
+import { getActorId } from '../service/user.js';
 import v from 'express-validator';
 import { userExists } from '../validators.js';
 
@@ -48,7 +49,7 @@ router.post('/user/:username/inbox',
       return res.sendStatus(400);
     }
     try {
-      await toInbox(req.params.username, activity);
+      await toInbox(getActorId(req.params.username), activity);
     }
     catch {
       return res.sendStatus(500);

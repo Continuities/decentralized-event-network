@@ -26,6 +26,7 @@ import {
   Menu as MenuIcon,
   ExitToApp
 } from '@material-ui/icons';
+import { Link } from '../controller/RouterLink';
 
 
 const drawerWidth = 240;
@@ -114,7 +115,9 @@ const NavigationFrame = ({ title, children }: P) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            {title}
+            <Link color="textPrimary" to="/home">
+              {title}
+            </Link>
           </Typography>
         </Toolbar>
       </AppBar>

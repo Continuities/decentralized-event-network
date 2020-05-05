@@ -15,6 +15,10 @@ export const getActorId = (username:string) => {
   return `${process.env.DOMAIN || ''}/user/${username}`;
 };
 
+export const getFollowerUri = (username:string) => {
+  return `${getActorId(username)}/followers`;
+}
+
 export const newUser = async (name:string, pubKey:string) => {
   const id = getActorId(name);
   return new Actor({
@@ -40,7 +44,7 @@ export const getActor = async (username:string): Promise<?Actor> => {
 }
 
 export const getActivity = async (username:string, activityUUID:string): Promise<?Activity> => {
-  const activity = await Activity.findOne({ id: getActivityId(username, activityUUID) });
+  const activity = await Activity.findOne({ id: getActivityId(getActorId(username), activityUUID) });
   return activity ? sanitized(activity) : null;
 }
 
@@ -88,7 +92,7 @@ export const addFollower = async (followeeName:?string, followerName:?string) =>
     return follows;
   }
 
-  return await toOutbox(followerName, {
+  return await toOutbox(follower, {
     type: 'Follow',
     to: [ followee ],
     actor: follower,
@@ -115,7 +119,7 @@ export const removeFollower = async (followeeName:?string, followerName:?string)
     return;
   }
 
-  toOutbox(followerName, {
+  toOutbox(follower, {
     type: 'Undo',
     to: [ followee ],
     actor: follower,

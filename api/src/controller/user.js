@@ -102,8 +102,8 @@ router.get('/feed', withAuthentication, async (req, res) => {
   const user = req.user.username;
 
   const [ inbox, outbox ] = await Promise.all([ 
-    getInbox(user).then(a => Promise.all(a.map(mapActivity)).then(a => a.filter(Boolean))), 
-    getOutbox(user).then(a => Promise.all(a.map(mapActivity)).then(a => a.filter(Boolean)))
+    getInbox(user).then(a => Promise.all(a.map(ac => mapActivity(ac, user))).then(a => a.filter(Boolean))), 
+    getOutbox(user).then(a => Promise.all(a.map(ac => mapActivity(ac, user))).then(a => a.filter(Boolean)))
   ]);
 
   const feed = mergeSortedActivities(inbox, outbox);
@@ -114,8 +114,9 @@ router.get('/inbox', withAuthentication, async (req, res) => {
   if (!req.user) {
     return res.sendStatus(401);
   }
+  const user = req.user.username;
   const activities = await getInbox(req.user.username);
-  const mapped = await Promise.all(activities.map(mapActivity));
+  const mapped = await Promise.all(activities.map(a => mapActivity(a, user)));
   res.json({ activities: mapped.filter(Boolean) });
 });
 
@@ -126,7 +127,7 @@ const outbox = async (req, res) => {
     return res.sendStatus(404);
   }
   const activities = await getOutbox(user);
-  const mapped = await Promise.all(activities.map(mapActivity));
+  const mapped = await Promise.all(activities.map(a => mapActivity(a, requestingUser)));
   // TODO: Filter based on privacy
   res.json({ activities: mapped.filter(Boolean) });
 };

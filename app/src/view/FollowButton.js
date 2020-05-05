@@ -48,7 +48,7 @@ const FollowButton = ({ username, followState }: P) => {
   return (
     <div className={styles.container}>
       <IconButton
-        aria-label={following ? 'unfollow' : 'follow'}
+        aria-label={following.value ? 'unfollow' : 'follow'}
         color="primary"
         disabled={following.loading}
         onClick={() => setFollowing(!following.value)}
