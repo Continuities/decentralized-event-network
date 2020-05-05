@@ -11,8 +11,11 @@ import {
   Typography,
   Box 
 } from '@material-ui/core';
+import DatePicker from 'react-datepicker';
 import ProgressButton from './ProgressButton';
 import { nilControls } from '../controller/FormController';
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 import type { $FormController } from '../controller/FormController';
 
@@ -42,24 +45,43 @@ const ControllableForm = ({ submitLabel, fields, controller }: P) => {
   } = controller ? controller() : nilControls;
   return (
     <form onSubmit={onSubmit}>
-      {fields.map(f => (
-        <TextField
-          key={f.name}
-          variant="outlined"
-          margin="normal"
-          required={f.required}
-          fullWidth
-          name={f.name}
-          label={f.label}
-          type={f.type}
-          value={values[f.name] || ''}
-          onChange={onChange}
-          autoComplete={f.autoComplete}
-          error={!!errors[f.name]}
-          helperText={errors[f.name]}
-          inputProps={f.pattern && { pattern: f.pattern[0], title: f.pattern[1] }}
-        />
-      ))}
+      {fields.map(f => {
+        if (f.type === 'datetime-local') {
+          const onChangeWrapper = (value) => {
+            const event = {"target": {"name": f.name, "value": value}};
+            onChange(event);
+          }
+          return (
+            <DatePicker
+              key={f.name}
+              onChange={onChangeWrapper}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15}
+              timeCaption="time"
+              dateFormat="MMMM d, yyyy h:mm aa"
+              placeholderText={f.label}
+            />
+          )
+        } else {
+          return (
+            <TextField
+              key={f.name}
+              variant="outlined"
+              margin="normal"
+              required={f.required}
+              fullWidth
+              name={f.name}
+              label={f.label}
+              type={f.type}
+              value={values[f.name] || ''}
+              onChange={onChange}
+              autoComplete={f.autoComplete}
+              error={!!errors[f.name]}
+              helperText={errors[f.name]}
+              inputProps={f.pattern && { pattern: f.pattern[0], title: f.pattern[1] }}
+            />
+          )}})}
       { responseCode === 401 && <Typography align="center" color="error">Incorrect username or password</Typography> }
       <Box mt={4}>
         <ProgressButton
