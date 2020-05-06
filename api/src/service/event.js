@@ -17,7 +17,7 @@ export const getEventId = (uuid:string) => {
   return `${process.env.DOMAIN || ''}/event/${uuid}`;
 }
 
-export const getEvent = async (eventUUID:string): ?Object => {
+export const getEvent = async (eventUUID:string): Promise<?Object> => {
   const event = await Event.findOne({ id: getEventId(eventUUID) });
   return event ? sanitized(event) : null;
 }

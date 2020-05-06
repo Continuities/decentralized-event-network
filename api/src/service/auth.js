@@ -19,7 +19,7 @@ export type UserToken = {|
   username: string
 |};
 
-const TOKEN_EXPIRATON = '1800s';
+const TOKEN_EXPIRATON = '1800h'; // TODO: Shorten this in production
 
 export const hashPassword = async (password:string):Promise<string> => {
   return bcrypt.hash(password, 10);

@@ -7,21 +7,6 @@
 
 import { Event, Activity } from '../model/activitypub.js';
 import { 
-  getActor, 
-  getActivity, 
-  getFollowers, 
-  getFollowing,
-  getOutbox 
-} from './user.js';
-import { 
-  getEvent, 
-  getEventId,
-  getOutbox as getEventOutbox,
-  getActivity as getEventActivity
-} from './event.js';
-import { getActorId } from './user.js';
-
-import { 
   Inbox, 
   Outbox, 
   Follower,
@@ -321,7 +306,7 @@ const resolveDestination = async (to:string): Promise<Set<string>> => {
   return new Set();
 };
 
-const renderCollection = (id:string, items:Array<*>):Object => ({
+export const renderCollection = (id:string, items:Array<*>):Object => ({
   "@context": "https://www.w3.org/ns/activitystreams",
   "id": id,
   "type": "Collection",
@@ -329,7 +314,7 @@ const renderCollection = (id:string, items:Array<*>):Object => ({
   "items": items
 });
 
-const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
+export const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
   "@context": "https://www.w3.org/ns/activitystreams",
   "id": id,
   "type": "OrderedCollection",
@@ -337,8 +322,15 @@ const renderOrderedCollection = (id:string, items:Array<*>):Object => ({
   "orderedItems": items
 });
 
-// TODO: Not sure I like this pattern. Feels like a shitty replacement
-// for express routes, and I'm losing Flow typing.
+const getUrlForId = (id:string):string => {
+  const domain = process.env.DOMAIN;
+  if (domain && id.startsWith(domain)) {
+    // Local object, so point at the local server
+    return `http://api:8080${id.substring(domain.length)}`;
+  }
+  return id;
+};
+
 export const getObject = async (id:string | Object): Promise<?any> => {
 
   if (typeof id === 'object') {
@@ -346,109 +338,32 @@ export const getObject = async (id:string | Object): Promise<?any> => {
   }
 
   // TODO: Request-level cacheing to prevent redundant fetch or db lookups
-
-  const domain = process.env.DOMAIN;
-  if (!domain || !id.startsWith(domain)) {
-    // Remote object, so fetch it
-    let res = null;
-    try {
-      res = await fetch(id, {
-        method: 'GET',
-        headers: {
-          // TODO: authentication?
-          'Accept': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams'
-        }
-      });
-    } catch {
-      // Request failed, so it's not okay
-    }
-    if (!res || !res.ok) {
-      return null;
-    }
-    return res.json();
+  let res = null;
+  try {
+    res = await fetch(getUrlForId(id), {
+      method: 'GET',
+      headers: {
+        // TODO: authentication?
+        'Accept': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams'
+      }
+    });
+  } catch(e) {
+    // Request failed, so it's not okay
   }
-
-  // This is a local object, so fetch it locally
-  // TODO: Make a nicer abstraction for this
-  if (id.endsWith('/')) {
-    id = id.substring(0, id.length - 1);
+  if (!res || !res.ok) {
+    return null;
   }
-  const [ ctrl, ...rest] = id.substring(domain.length + 1).split('/');
-  if (ctrl === 'user') {
-    if (rest.length === 1) {
-      // User request
-      return getActor(rest[0]);
-    }
-    else if (rest.length === 2 && rest[1] === 'followers') {
-      // Followers request
-      return renderCollection(id, await getFollowers(rest[0]));
-    }
-    else if (rest.length === 2 && rest[1] === 'following') {
-      // Following request
-      return renderCollection(id, await getFollowing(rest[0]));
-    }
-    else if (rest.length === 2 && rest[1] === 'outbox') {
-      // User outbox request
-      return renderOrderedCollection(id, await getOutbox(rest[0]));
-    }
-    else if (rest.length === 3 && rest[1] === 'activities') {
-      // Activity request
-      return getActivity(rest[0], rest[2]);
-    }
-  }
-  else if (ctrl === 'event') {
-    if (rest.length === 1) {
-      // Event request
-      return getEvent(rest[0]);
-    }
-    else if (rest.length === 2 && rest[1] === 'outbox') {
-      // Event outbox request
-      return renderOrderedCollection(id, await getEventOutbox(rest[0]));
-    }
-    else if (rest.length === 3 && rest[1] === 'activities') {
-      // Activity request
-      return getEventActivity(rest[0], rest[2]);
-    }
-  }
-
-  // Don't know what it is
-  return null;
+  return res.json();
 };
 
 const postObject = async (to, object): Promise<boolean> => {
-  const domain = process.env.DOMAIN;
-  if (!domain || !to.startsWith(domain)) {
-    // Remote endpoint, so POST it
-    const res = await fetch(to, {
-      method: 'POST',
-      headers: {
-        // TODO: authentication?
-        'Content-Type': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams'
-      },
-      body: JSON.stringify(object)
-    });
-    return res.ok;
-  }
-
-  // This is a local endpoint, so save it locally
-  // TODO: Make a nicer abstraction for this
-  const [ ctrl, ...rest] = to.substring(domain.length + 1).split('/');
-  if (rest.length === 2 && rest[1] === 'inbox') {
-    // Posting to inbox
-    let actorId;
-    if (ctrl === 'user') {
-      actorId = getActorId(rest[0]);
-    }
-    else if (ctrl === 'event') {
-      actorId = getEventId(rest[0]);
-    }
-    else {
-      return false;
-    }
-    await toInbox(actorId, object);
-    return true;
-  }
-
-  // Unsupported endpoint
-  return false;
+  const res = await fetch(getUrlForId(to), {
+    method: 'POST',
+    headers: {
+      // TODO: authentication?
+      'Content-Type': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
+    },
+    body: JSON.stringify(object)
+  });
+  return res.ok;
 };
