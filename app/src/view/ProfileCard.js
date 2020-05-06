@@ -17,6 +17,7 @@ import {
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import FollowButton from './FollowButton';
+import { Actor } from 'activitypub';
 
 const useStyles = makeStyles((theme) => ({
   media: {
@@ -34,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type P = {|
-  user: api$User
+  user: Actor
 |};
 
 const ProfileCard = ({ user }: P) => {
@@ -52,7 +53,7 @@ const ProfileCard = ({ user }: P) => {
           component="h2"
         >
           { user.name }
-          <FollowButton username={user.name} followState={user.following}  />
+          <FollowButton userId={String(user.id)} /> 
         </Typography>
       </CardContent>
     </Card>

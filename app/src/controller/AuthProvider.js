@@ -11,8 +11,8 @@ import jwtDecode from 'jwt-decode';
 
 const STORAGE_KEY = 'auth';
 
-type AuthContextType = [ ?string, (?string) => void ];
-const AuthContext = createContext<AuthContextType>([ null, () => {} ]);
+type AuthContextType = [ ?string, ?string, (?string) => void ];
+const AuthContext = createContext<AuthContextType>([ null, null, () => {} ]);
 
 type P = {|
   children: React$Node
@@ -29,8 +29,9 @@ const AuthProvider = ({ children }: P) => {
     }
     setAuth(token);
   };
+  const username = auth && jwtDecode(auth).username;
   return (
-    <AuthContext.Provider value={[ auth, set ]}>
+    <AuthContext.Provider value={[ auth, username, set ]}>
       { children }
     </AuthContext.Provider>
   );
@@ -44,7 +45,7 @@ export const requireUser = <Com: React$ComponentType<*>>(Component:Com) =>
     if (!auth) {
       return <Redirect to='/login' noThrow />
     }
-    return <Component {...props} user={jwtDecode(auth).username}/>;
+    return <Component {...props} username={jwtDecode(auth).username}/>;
   };
 
 export default AuthProvider;

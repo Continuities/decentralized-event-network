@@ -5,9 +5,11 @@
  * @flow
  */
 
-export const TestString = "This is a test";
+import Event from './event.js';
+import Actor from './actor.js';
+import Activity from './activity.js';
 
+export { default as Collection } from './collection.js';
+export { default as OrderedCollection } from './ordered-collection.js';
 export { default as ObjectBase } from './object.js';
-export { default as Event } from './event.js';
-export { default as Actor } from './actor.js';
-export { default as Activity } from './activity.js';
+export { Event, Actor, Activity };

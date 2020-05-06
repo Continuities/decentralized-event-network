@@ -28,6 +28,10 @@ module.exports = {
     historyApiFallback: true
   },
   plugins: [
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: 'development',
+      DOMAIN: 'http://localhost'
+    }),
     new FlowWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "static", "index.html"),

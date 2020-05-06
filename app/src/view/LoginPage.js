@@ -23,7 +23,7 @@ import {
 
 const Login = () => {
   const styles = useCoreStyles();
-  const [ auth, setAuth ] = useAuth();
+  const [ auth, ,setAuth ] = useAuth();
   const formController = FormController(
     'POST', 
     '/api/user/token',

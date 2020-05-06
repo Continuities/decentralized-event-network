@@ -79,7 +79,7 @@ type P = {|
 const NavigationFrame = ({ title, children }: P) => {
   const styles = useStyles();
   const theme = useTheme();
-  const [ auth, setAuth ] = useAuth();
+  const [ auth, ,setAuth ] = useAuth();
   const [ mobileOpen, setMobileOpen ] = useState(false);
 
   const handleDrawerToggle = () => {

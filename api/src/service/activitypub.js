@@ -95,15 +95,16 @@ export const toInbox = async (actorId:string, activity:Activity) => {
   case 'follow': {
     // https://www.w3.org/TR/activitypub/#follow-activity-inbox
     if (activity.object === actorId) {
+      const toId = typeof activity.actor === 'string' ? activity.actor : String(activity.actor.id);
       toOutbox(actorId, {
         type: 'Accept',
         actor: actorId,
-        to: [ activity.actor ],
+        to: [ toId ],
         object: activity
       });
       await addFollower(
         actorId,
-        activity.actor
+        toId
       );
     }
     break;
@@ -111,15 +112,16 @@ export const toInbox = async (actorId:string, activity:Activity) => {
   case 'join': {
     // Same request/response pattern as follow
     if (activity.object === actorId) {
+      const toId = typeof activity.actor === 'string' ? activity.actor : String(activity.actor.id);
       toOutbox(actorId, {
         type: 'Accept',
         actor: actorId,
-        to: [ activity.actor ],
+        to: [ toId ],
         object: activity
       });
       await addAttendee(
         actorId,
-        activity.actor
+        toId
       );
     }
     break;

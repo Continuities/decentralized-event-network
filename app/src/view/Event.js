@@ -6,30 +6,27 @@
  */
 
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { withActivities, useEventOutbox } from '../controller/UserProvider';
-import ActivityList from './ActivityList';
 import ObjectCard from './ObjectCard';
+import { 
+  Event, 
+  Activity, 
+  OrderedCollection 
+} from 'activitypub';
+import { useObject } from '../controller/ObjectProvider';
+import CollectionView from './CollectionView';
 
 type P = {
-  event: api$Event
+  event: Event
 };
 
-const useStyles = makeStyles(() => ({
-  feed: {
-    
-  }
-}));
-
-const Event = ({ event }: P) => {
-  const styles = useStyles
-  const FeedList = withActivities(useEventOutbox.bind(null, event.id))(ActivityList);
+const EventView = ({ event }: P) => {
+  const [ outbox ] = useObject<OrderedCollection<Activity>>(event.outbox);
   return (
     <React.Fragment>
       <ObjectCard object={ event } />
-      <FeedList className={styles.feed} />
+      { !outbox ? 'LOADING...' : <CollectionView data={outbox} /> }
     </React.Fragment>
   );
 }
 
-export default Event;
+export default EventView;

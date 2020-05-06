@@ -19,7 +19,7 @@ type HOC<C: React$ComponentType<*>> = (C) => React$ComponentType<React$ElementCo
 
 type ActivityProvider = () => GetData<ActivityData>;
 export const useInbox = () => useData<ActivityData>('user/inbox');
-export const useOutbox = (username?:string) => useData<ActivityData>(username ? `user/${username}/outbox`: 'user/outbox');
+export const useOutbox = (username?:?string) => useData<ActivityData>(username ? `user/${username}/outbox`: 'user/outbox');
 export const useEventOutbox = (eventId:string) => useData<ActivityData>(`event/${eventId}/outbox`);
 export const useFeed = () => useData<ActivityData>('user/feed');
 

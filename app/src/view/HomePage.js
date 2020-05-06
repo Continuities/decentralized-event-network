@@ -11,8 +11,10 @@ import { navigate } from '@reach/router';
 import { Fab } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Add as AddIcon } from '@material-ui/icons';
-import { withActivities, useFeed } from '../controller/UserProvider';
-import ActivityList from './ActivityList';
+import { useObject } from '../controller/ObjectProvider';
+import FourOhFour from './FourOhFour';
+import CollectionView from './CollectionView';
+import { Actor, OrderedCollection, Activity } from 'activitypub';
 
 const useStyles = makeStyles(theme => ({
   fab: {
@@ -22,14 +24,26 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Home = () => {
+type P = {
+  username: string
+};
+
+const Home = ({ username }: P) => {
   const styles = useStyles();
 
-  const FeedList = withActivities(useFeed)(ActivityList);
+  if (!username || !process.env.DOMAIN) {
+    return <FourOhFour />;
+  }
+
+  const userId = `${process.env.DOMAIN}/user/${username}`;
+
+  const [ user ] = useObject<Actor>(userId);
+  const [ outbox ] = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
+  const [ inbox ] = useObject<OrderedCollection<Activity>>(user ? user.inbox : null);
 
   return (
     <React.Fragment>
-      <FeedList />
+      {outbox == null ? 'LOADING...' : <CollectionView data={outbox} merge={inbox}/>}
       <Fab 
         className={styles.fab} 
         aria-label="Create event"

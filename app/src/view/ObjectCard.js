@@ -16,9 +16,10 @@ import { Event as EventIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
 import { Link } from '../controller/RouterLink';
 import AttendButton from './AttendButton';
+import { ObjectBase, Event } from 'activitypub';
 
-
-const timeString = (dateString:string) => {
+const timeString = (dateString:?string) => {
+  if (!dateString) { return null; }
   const date = new Date(dateString);
   return `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
 };
@@ -39,10 +40,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type P = {|
-  object: api$Object
+  object: ObjectBase
 |};
 
-const EventCard = ({ event }: { event: api$Event }) => {
+const EventCard = ({ event }: { event: Event }) => {
   const styles = useStyles();
   return (
     <Card>
@@ -51,16 +52,16 @@ const EventCard = ({ event }: { event: api$Event }) => {
       </Box>
       <CardContent>
         <Typography className={styles.title} gutterBottom variant="h5" component="h2">
-          <Link to={event.url} color="textPrimary">
+          <Link to={String(event.id)} color="textPrimary">
             { event.name }
           </Link>
-          <AttendButton eventId={event.id} attending={event.attending}  />
+          <AttendButton eventId={String(event.id)} attending={event.attending}  />
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          Starts {timeString(event.start)}
+          Starts {timeString(event.startTime)}
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
-          Ends {timeString(event.end)}
+          Ends {timeString(event.endTime)}
         </Typography>
       </CardContent>
     </Card>
@@ -69,7 +70,7 @@ const EventCard = ({ event }: { event: api$Event }) => {
 
 const ObjectCard = ({ object }: P) => {
   switch (object.type) {
-  case 'Event': return <EventCard event={(object:api$Event)} />
+  case 'Event': return <EventCard event={(object:Event)} />
   // TODO: Support other relevant object types
   }
   return null;

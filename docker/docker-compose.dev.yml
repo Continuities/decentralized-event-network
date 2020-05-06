@@ -24,6 +24,7 @@ services:
     environment:
       - NODE_ENV=development
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - DOMAIN=http://localhost
     volumes:
       - ../app:/opt/app
       - ../activitypub:/opt/activitypub # To see shared data models

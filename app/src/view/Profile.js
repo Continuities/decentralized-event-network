@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * A user's public profile
  * @author mtownsend
@@ -6,28 +7,24 @@
  */
 
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { withActivities, useOutbox } from '../controller/UserProvider';
-import ActivityList from './ActivityList';
+import CollectionView from './CollectionView';
 import ProfileCard from './ProfileCard';
 
+import { Actor, Activity, OrderedCollection } from 'activitypub';
+import { useObject } from '../controller/ObjectProvider';
+
 type P = {
-  profile: api$User
+  userId: string
 };
 
-const useStyles = makeStyles(() => ({
-  feed: {
-    
-  }
-}));
+const Profile = ({ userId }: P) => {
+  const [ user ] = useObject<Actor>(userId);
+  const [ outbox ] = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
 
-const Profile = ({ profile }: P) => {
-  const styles = useStyles
-  const FeedList = withActivities(useOutbox.bind(null, profile.name))(ActivityList);
   return (
     <React.Fragment>
-      <ProfileCard user={ profile } />
-      <FeedList className={styles.feed} />
+      { !user ? 'LOADING...' : <ProfileCard user={ user } /> }
+      { !outbox ? 'LOADING...' : <CollectionView data={outbox} /> }
     </React.Fragment>
   );
 }
