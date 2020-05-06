@@ -13,7 +13,9 @@ const app:express$Application<> = express();
 const upload = multer();
 const port = 8080;
 
-app.use(express.json());
+app.use(express.json({ 
+  type: [ 'application/*+json', 'application/json' ] 
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.array());
 

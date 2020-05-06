@@ -6,6 +6,7 @@
  */
 
 import { User } from './model/api.js';
+import { getEvent } from './service/event.js';
 
 type Validator = (value:string, { req: any }) => Promise<void>;
 
@@ -27,14 +28,21 @@ export const uniqueUser:Validator = async val => {
   if (existing) {
     throw 'That username is taken';
   }
-}
+};
 
 export const userExists:Validator = async val => {
   const existing = await User.findOne({ username: val });
   if (!existing) {
     throw 'No such user';
   }
-}
+};
+
+export const eventExists:Validator = async val => {
+  const existing = await getEvent(val);
+  if (!existing) {
+    throw 'No such event';
+  }
+};
 
 export const timespan:Validator = async (value, { req }) => {
   const start = new Date(req.body.start);
@@ -42,4 +50,4 @@ export const timespan:Validator = async (value, { req }) => {
   if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end <= start) {
     throw 'End date must come after start date'
   }
-}
+};

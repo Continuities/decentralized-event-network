@@ -10,14 +10,11 @@ import v from 'express-validator';
 import { withAuthentication } from '../service/auth.js';
 import { 
   getEvent, 
-  getEventId, 
   getOutbox,
   addAttendee,
   removeAttendee
 } from '../service/event.js';
 import { mapEvent, mapActivity } from '../service/api.js';
-import { toOutbox } from '../service/activitypub.js';
-import { getActorId, getFollowerUri } from '../service/user.js';
 
 import type { Router } from 'express';
 import type { auth$Request } from '../service/auth.js'
