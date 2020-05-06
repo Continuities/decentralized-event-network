@@ -14,6 +14,8 @@ import {
 } from '@material-ui/core';
 import { Event as EventIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
+import { Link } from '../controller/RouterLink';
+import AttendButton from './AttendButton';
 
 
 const timeString = (dateString:string) => {
@@ -28,6 +30,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.palette.action.hover
+  },
+  title: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   }
 }));
 
@@ -43,8 +50,11 @@ const EventCard = ({ event }: { event: api$Event }) => {
         <EventIcon style={{ fontSize: 70 }}/>
       </Box>
       <CardContent>
-        <Typography gutterBottom variant="h5" component="h2">
-          { event.name }
+        <Typography className={styles.title} gutterBottom variant="h5" component="h2">
+          <Link to={event.url} color="textPrimary">
+            { event.name }
+          </Link>
+          <AttendButton eventId={event.id} attending={event.attending}  />
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
           Starts {timeString(event.start)}

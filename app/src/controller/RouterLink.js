@@ -15,6 +15,10 @@ type P = {
 
 export const routed = (Component:Class<React$Component<any>>) => {
   const RoutedComponent = ({ to, ...props }: P) => {
+    const localDomain = `${window.location.protocol}//${window.location.host}`;
+    if (to.startsWith(localDomain)) {
+      to = to.substring(localDomain.length);
+    }
     const CustomLink = useMemo(
       () =>
         forwardRef(function innerLink(linkProps, ref) { 

@@ -11,22 +11,23 @@ import { Link } from '../controller/RouterLink';
 import { Link as ExternalLink } from '@material-ui/core';
 
 type P = {|
-  user: api$User
+  object: api$User | api$Event
 |};
 
-const ProfileLink = ({ user }: P) => {
-  const localDomain = `${window.location.protocol}//${window.location.host}/user/`;
-  if (!user.url.startsWith(localDomain)) {
+const ProfileLink = ({ object }: P) => {
+  const localDomain = `${window.location.protocol}//${window.location.host}`;
+  if (!object.url.startsWith(localDomain)) {
     // This is a remote profile
     return (
-      <ExternalLink to={user.url}>
-        {user.name}
+      <ExternalLink href={object.url}>
+        {object.name}
       </ExternalLink>
     );
   }
+  const url = object.type === 'Event' ? `/event/${object.id}` : `/user/${object.name}`;
   return (
-    <Link to={`/user/${user.name}`}>
-      {user.name}
+    <Link color="textPrimary" to={url}>
+      {object.name}
     </Link>
   );
 };

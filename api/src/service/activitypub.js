@@ -13,17 +13,44 @@ import {
   getFollowing,
   getOutbox 
 } from './user.js';
-import { getEvent } from './event.js';
+import { 
+  getEvent, 
+  getEventId,
+  getOutbox as getEventOutbox,
+  getActivity as getEventActivity
+} from './event.js';
 import { getActorId } from './user.js';
 
-import { Inbox, Outbox, Follower } from '../model/api.js';
+import { 
+  Inbox, 
+  Outbox, 
+  Follower,
+  Attendee
+} from '../model/api.js';
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
 import type { Object$Document } from '../model/activitypub.js';
 
-export const getActivityId = (user:string, uuid:string) => {
-  return `${getActorId(user)}/activities/${uuid}`
+export const getActivityId = (actorId:string, uuid:string) => {
+  return `${actorId}/activities/${uuid}`
+};
+
+const addAttendee = async (eventId:string, attendeeId:string) => {
+  const existing = await Attendee.findOne({
+    attendee: attendeeId, 
+    event: eventId
+  });
+
+  if (existing) { 
+    // Don't insert duplicate records
+    return; 
+  }
+
+  return new Attendee({
+    attendee: attendeeId,
+    event: eventId
+  }).save();
 };
 
 const addFollower = async (followeeId:string, followerId:string) => {
@@ -58,32 +85,58 @@ const undoActivity = async (activityId:string) => {
   // Undo side-effects
   // TODO: It'd be nice to factor activity side-effects to somewhere
   //       central to keep all the logic together
-  if (undone.type === 'Follow') {
+  switch (undone.type) {
+  case 'Follow':
     ops.push(Follower.deleteOne({ 
       followee: undone.object, 
       follower: undone.actor
     }));
+    break;
+  case 'Join':
+    ops.push(Attendee.deleteOne({
+      event: undone.object,
+      attendee: undone.actor
+    }));
+    break;
   }
 
   return Promise.all(ops);
 }
 
-export const toInbox = async (username:string, activity:Activity) => {
+export const toInbox = async (actorId:string, activity:Activity) => {
   // TODO: Handle forward-from-inbox https://www.w3.org/TR/activitypub/#inbox-forwarding
 
   switch (activity.type.toLowerCase()) {
   case 'follow': {
     // https://www.w3.org/TR/activitypub/#follow-activity-inbox
-    toOutbox(username, {
-      type: 'Accept',
-      actor: getActorId(username),
-      to: [ activity.actor ],
-      object: activity
-    });
-    await addFollower(
-      getActorId(username),
-      activity.actor
-    );
+    if (activity.object === actorId) {
+      toOutbox(actorId, {
+        type: 'Accept',
+        actor: actorId,
+        to: [ activity.actor ],
+        object: activity
+      });
+      await addFollower(
+        actorId,
+        activity.actor
+      );
+    }
+    break;
+  }
+  case 'join': {
+    // Same request/response pattern as follow
+    if (activity.object === actorId) {
+      toOutbox(actorId, {
+        type: 'Accept',
+        actor: actorId,
+        to: [ activity.actor ],
+        object: activity
+      });
+      await addAttendee(
+        actorId,
+        activity.actor
+      );
+    }
     break;
   }
   case 'accept': {
@@ -95,6 +148,13 @@ export const toInbox = async (username:string, activity:Activity) => {
     case 'follow': {
       await addFollower(
         acceptedActivity.object, 
+        acceptedActivity.actor
+      );
+      break;
+    }
+    case 'join': {
+      await addAttendee(
+        acceptedActivity.object,
         acceptedActivity.actor
       );
       break;
@@ -123,7 +183,7 @@ export const toInbox = async (username:string, activity:Activity) => {
   }
 
   const entry = new Inbox({
-    to: getActorId(username),
+    to: actorId,
     published: dbActivity.published || new Date().toISOString(),
     activity: dbActivity._id
   });
@@ -132,9 +192,9 @@ export const toInbox = async (username:string, activity:Activity) => {
 
 // Submit an activity to an actor's outbox. Currently called by the REST api
 // during POST, but could be easily modified to allow direct client-server ActivityPub
-export const toOutbox = async (username:string, activity:$Shape<Activity>):Promise<void> => {
+export const toOutbox = async (actorId:string, activity:$Shape<Activity>):Promise<void> => {
   // TODO: Validate that the activity's actor matches the username
-  activity.id = getActivityId(username, uuid.generate());
+  activity.id = getActivityId(actorId, uuid.generate());
   let createdActivity;
   switch (activity.type.toLowerCase()) {
   case 'create': {
@@ -147,6 +207,7 @@ export const toOutbox = async (username:string, activity:$Shape<Activity>):Promi
     }
     break;
   }
+  case 'join':
   case 'follow': {
     createdActivity = await new Activity(activity).save();
     break;
@@ -173,7 +234,7 @@ export const toOutbox = async (username:string, activity:$Shape<Activity>):Promi
   }
 
   await new Outbox({
-    from: getActorId(username),
+    from: actorId,
     published: createdActivity.published || new Date().toISOString(),
     activity: createdActivity._id
   }).save();
@@ -248,6 +309,9 @@ const resolveDestination = async (to:string): Promise<Set<string>> => {
     }
     else if (object.first) {
       items.push(object.first);
+    }
+    if (items.length === 0) {
+      return new Set();
     }
     const uris = await Promise.all<Set<string>>(items.map(resolveDestination));
     return uris.reduce((acc, cur) => new Set([...acc, ...cur]));
@@ -332,9 +396,19 @@ export const getObject = async (id:string | Object): Promise<?any> => {
       return getActivity(rest[0], rest[2]);
     }
   }
-  else if (ctrl === 'event' && rest.length === 1) {
-    // Event request
-    return getEvent(rest[0]);
+  else if (ctrl === 'event') {
+    if (rest.length === 1) {
+      // Event request
+      return getEvent(rest[0]);
+    }
+    else if (rest.length === 2 && rest[1] === 'outbox') {
+      // Event outbox request
+      return renderOrderedCollection(id, await getEventOutbox(rest[0]));
+    }
+    else if (rest.length === 3 && rest[1] === 'activities') {
+      // Activity request
+      return getEventActivity(rest[0], rest[2]);
+    }
   }
 
   // Don't know what it is
@@ -359,9 +433,19 @@ const postObject = async (to, object): Promise<boolean> => {
   // This is a local endpoint, so save it locally
   // TODO: Make a nicer abstraction for this
   const [ ctrl, ...rest] = to.substring(domain.length + 1).split('/');
-  if (ctrl === 'user' && rest.length === 2 && rest[1] === 'inbox') {
+  if (rest.length === 2 && rest[1] === 'inbox') {
     // Posting to inbox
-    await toInbox(rest[0], object);
+    let actorId;
+    if (ctrl === 'user') {
+      actorId = getActorId(rest[0]);
+    }
+    else if (ctrl === 'event') {
+      actorId = getEventId(rest[0]);
+    }
+    else {
+      return false;
+    }
+    await toInbox(actorId, object);
     return true;
   }
 

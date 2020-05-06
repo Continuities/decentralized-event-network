@@ -25,9 +25,12 @@ const timestamp = (dateString:string) => {
 
 const CreateActivity = ({ activity }:P) => (
   <Box width="100%">
+    <Typography display="block" variant="caption">
+      {timestamp(activity.published)}
+    </Typography>
     <Typography variant="caption">
-      <ProfileLink user={activity.user} />
-      {` posted on ${timestamp(activity.published)}`}
+      <ProfileLink object={activity.user} />
+      {` posted`}
     </Typography>
     <ObjectCard object={activity.object} />
   </Box>
@@ -35,12 +38,27 @@ const CreateActivity = ({ activity }:P) => (
 
 const FollowActivity = ({ activity }: { activity: api$FollowActivity }) => (
   <Box width="100%">
-    <Typography variant="caption">
-      <ProfileLink user={activity.user} />
-      {` followed `} 
-      <ProfileLink user={activity.object} /> 
-      {` on ${timestamp(activity.published)}`}
+    <Typography display="block" variant="caption">
+      {timestamp(activity.published)}
     </Typography>
+    <Typography variant="caption">
+      <ProfileLink object={activity.user} />
+      {` followed `} 
+      <ProfileLink object={activity.object} /> 
+    </Typography>
+  </Box>
+);
+
+const JoinActivity = ({ activity }: { activity: api$JoinActivity }) => (
+  <Box width="100%">
+    <Typography display="block" variant="caption">
+      {timestamp(activity.published)}
+    </Typography>
+    <Typography variant="caption">
+      <ProfileLink object={activity.user} />
+      {` is attending`} 
+    </Typography>
+    <ObjectCard object={activity.object} />
   </Box>
 );
 
@@ -49,6 +67,7 @@ const Activity = ({ activity }:P) => {
   switch (activity.type) {
   case 'Create': return <CreateActivity activity={activity} />
   case 'Follow': return <FollowActivity activity={activity} />
+  case 'Join': return <JoinActivity activity={activity} />
   }
 
   return null;
