@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:flowtype/recommended"
+  ],
+  "env": {
+    "es6": true,
+    "node": true,
+    "mocha": true
+  },
+  "plugins": [ "flowtype" ],
+  "rules": {
+    "indent": ["error", 2],
+    "flowtype/require-valid-file-annotation": [
+      2,
+      "always"
+    ],
+    "flowtype/space-after-type-colon": "off"
+  },
+  "settings": {
+    "flowVersion": "0.123"
+  }
+}

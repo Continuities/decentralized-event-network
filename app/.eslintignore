@@ -1,3 +1,4 @@
 src/index.js
 babel.config.js
 webpack.config.cjs
+**/dist/*
