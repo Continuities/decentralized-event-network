@@ -5,8 +5,9 @@ module.exports = {
     "@babel/preset-flow"
   ],
   sourceMaps: 'both',
-  plugins: [[ 
-    'babel-plugin-transform-imports', 
+  plugins: [
+    '@babel/plugin-proposal-class-properties',
+    [ 'babel-plugin-transform-imports', 
     {
       '@material-ui/core': {
         // Use "transform: '@material-ui/core/${member}'," if your bundler does not support ES modules

@@ -6,7 +6,8 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema, Object$Document } from './object.js';
+import { Object$Schema } from './object.js';
+import { Activity } from 'activitypub';
 
 const Activity$Schema = new Object$Schema({
   actor: String,
@@ -19,13 +20,8 @@ Activity$Schema.pre('save', async function() {
   }
 });
 
-class Activity$Document extends Object$Document {
-  actor: string;
-  object: string | $Shape<Object$Document> | $Shape<Activity$Document>;
-}
+Activity$Schema.loadClass(Activity);
 
-Activity$Schema.loadClass(Activity$Document);
+const ActivityDocument:Class<Activity> = Mongoose.model('Activity', Activity$Schema);
 
-const Activity:Class<Activity$Document> = Mongoose.model('Activity', Activity$Schema);
-
-export default Activity;
+export default ActivityDocument;

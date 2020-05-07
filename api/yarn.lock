@@ -157,6 +157,11 @@ acorn@^7.1.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-7.1.1.tgz#e35668de0b402f359de515c5482a1ab9f89a69bf"
   integrity sha512-add7dgA5ppRPxCFJoAGfMDi7PIBXq1RtGo7BhbLaxwrXPOmw8gq48Y9ozT01hUKy9byMjlR20EJhu5zlkErEkg==
 
+activitypub@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/activitypub/-/activitypub-0.0.1.tgz#e5accfb4b2a7741bab33703dd8f08d8c4eb548e5"
+  integrity sha512-AZ0zf4IorpISfId36ma0xyKBsHXwZURof+lJNR4fKr//kBRaxhRJj7JKUYdUiw9YCFjZdONzfKyu1lVUuZkf6Q==
+
 agent-base@6:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-6.0.0.tgz#5d0101f19bbfaed39980b22ae866de153b93f09a"

@@ -6,23 +6,19 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema, Object$Document } from './object.js';
+import { Object$Schema } from './object.js';
+import { Event } from 'activitypub';
 
 const Event$Schema = new Object$Schema({
   inbox: String,
   outbox: String
 });
 
-class Event$Document extends Object$Document {
-  inbox: string;
-  outbox: string;
-}
-
 Event$Schema.pre('save', function() {
   this.inbox = `${this.id}/inbox`;
   this.outbox = `${this.id}/outbox`;
 });
 
-const Event:Class<Event$Document> = Mongoose.model('Event', Event$Schema);
+const EventDocument:Class<Event> = Mongoose.model('Event', Event$Schema);
 
-export default Event;
+export default EventDocument;

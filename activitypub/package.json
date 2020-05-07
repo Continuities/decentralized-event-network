@@ -1,0 +1,21 @@
+{
+  "type": "module",
+  "name": "activitypub",
+  "version": "1.0.0",
+  "main": "dist/activitypub.js",
+  "license": "MIT",
+  "scripts": {
+    "eslint": "eslint ./src",
+    "flow:check": "flow check ./src/",
+    "flow:build": "flow-copy-source ./src ./dist && flow-remove-types ./src/ -d ./dist/ --all --pretty",
+    "build": "yarn eslint && yarn flow:check && yarn flow:build"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "flow-bin": "^0.124.0",
+    "flow-copy-source": "^2.0.9",
+    "flow-remove-types": "^2.124.0"
+  }
+}

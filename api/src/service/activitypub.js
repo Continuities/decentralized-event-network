@@ -15,7 +15,7 @@ import {
 import uuid from 'short-uuid';
 import fetch from 'node-fetch';
 
-import type { Object$Document } from '../model/activitypub.js';
+import type { ObjectBase } from 'activitypub';
 
 export const getActivityId = (actorId:string, uuid:string) => {
   return `${actorId}/activities/${uuid}`
@@ -249,9 +249,9 @@ const publish = async (activity:Activity):Promise<void> => {
   await Promise.all(completionPromises);
 };
 
-const saveObject = async (object:Object$Document):Promise<?string> => {
+const saveObject = async (object:ObjectBase):Promise<?string> => {
   // TODO: Implement the rest of the relevant object types
-  let createdObject:?Object$Document;
+  let createdObject:?ObjectBase;
   switch (object.type.toLowerCase()) {
   case 'event': {
     createdObject = await (new Event(object)).save();

@@ -6,8 +6,9 @@
  */
 
 import Mongoose from 'mongoose';
+import { ObjectBase } from 'activitypub';
 
-export class Object$Schema<C:Object$Document> extends Mongoose.Schema<C> {
+export class Object$Schema<C:ObjectBase> extends Mongoose.Schema<C> {
   constructor(obj:any, options:any) {
     super(obj, options);
     this.add({
@@ -36,24 +37,4 @@ export class Object$Schema<C:Object$Document> extends Mongoose.Schema<C> {
       ];
     });
   }
-}
-
-export class Object$Document /* :: extends Mongoose$Document */ {
-  id: string | number;
-  type: string;
-  name: ?string;
-  attributedTo: ?string;
-  content: ?string;
-  summary: ?string;
-  published: ?string;
-  updated: ?string;
-  startTime: ?string;
-  endTime: ?string;
-  image: ?string;
-  location: ?string;
-  audience: ?string;
-  to: ?Array<string>;
-  bto: ?Array<string>;
-  cc: ?Array<string>;
-  bcc: ?Array<string>;
 }

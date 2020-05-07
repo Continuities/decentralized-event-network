@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+# Link local ActivityPub npm package
+(cd activitypub && yarn link)
+(cd app && yarn link "activitypub")
+(cd api && yarn link "activitypub")
+
 # Build app and api containers
 docker-compose -f docker/docker-compose.dev.yml build
 

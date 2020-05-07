@@ -8,7 +8,8 @@
 import { getObject } from './activitypub.js';
 import { Follower, Attendee } from '../model/api.js';
 import { getActorId } from './user.js';
-import type { Activity, Event, Actor, Object$Document } from '../model/activitypub.js';
+import type { Event, ObjectBase } from 'activitypub';
+import type { Activity, Actor } from '../model/activitypub.js';
 
 const getFollowState = async (followeeId:string, followerId:?string):Promise<?api$FollowState> => {
   if (!followerId) {
@@ -97,7 +98,7 @@ export const mapActivity = async (json:?$Shape<Activity>, currentUsername:?strin
   return null;
 };
 
-export const mapObject = async (json:?$Shape<Object$Document>, currentUsername:?string = null):Promise<?api$Object> => {
+export const mapObject = async (json:?$Shape<ObjectBase>, currentUsername:?string = null):Promise<?api$Object> => {
 
   if (!json) {
     return null;

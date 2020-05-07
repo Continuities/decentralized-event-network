@@ -6,7 +6,8 @@
  */
 
 import Mongoose from '../../service/db.js';
-import { Object$Schema, Object$Document } from './object.js';
+import { Object$Schema } from './object.js';
+import { Actor } from 'activitypub';
 
 const Actor$Schema = new Object$Schema({
   preferredUsername: String,
@@ -21,25 +22,12 @@ const Actor$Schema = new Object$Schema({
   }
 });
 
-class Actor$Document extends Object$Document {
-  preferredUsername: string;
-  inbox: string;
-  outbox: string;
-  followers: string;
-  following: string;
-  publicKey: {
-    id: string,
-    owner: string,
-    publicKeyPem: string
-  };
-}
-
 Actor$Schema.pre('save', function() {
   this['@context'].push('https://w3id.org/security/v1');
 });
 
-Actor$Schema.loadClass(Actor$Document);
+Actor$Schema.loadClass(Actor);
 
-const Actor:Class<Actor$Document> = Mongoose.model('Actor', Actor$Schema);
+const ActorDocument:Class<Actor> = Mongoose.model('Actor', Actor$Schema);
 
-export default Actor;
+export default ActorDocument;
