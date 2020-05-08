@@ -12,6 +12,7 @@ import {
   Box 
 } from '@material-ui/core';
 import DatePicker from 'react-datepicker';
+import { formatISO, parseISO } from 'date-fns';
 import ProgressButton from './ProgressButton';
 import { nilControls } from '../controller/FormController';
 
@@ -48,9 +49,10 @@ const ControllableForm = ({ submitLabel, fields, controller }: P) => {
       {fields.map(f => {
         if (f.type === 'datetime-local') {
           const onChangeWrapper = (value) => {
-            const event = {"target": {"name": f.name, "value": value}};
+            const event = {"target": {"name": f.name, "value": formatISO(value)}};
             onChange(event);
           }
+          const selected = values[f.name] ? parseISO(values[f.name]) : null;
           return (
             <DatePicker
               key={f.name}
@@ -61,6 +63,7 @@ const ControllableForm = ({ submitLabel, fields, controller }: P) => {
               timeCaption="time"
               dateFormat="MMMM d, yyyy h:mm aa"
               placeholderText={f.label}
+              selected={selected}
             />
           )
         } else {
