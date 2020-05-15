@@ -13,7 +13,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Add as AddIcon } from '@material-ui/icons';
 import { useObject } from '../controller/ObjectProvider';
 import FourOhFour from './FourOhFour';
-import CollectionView from './CollectionView';
+import ActivityList from './ActivityList';
 import { Actor, OrderedCollection, Activity } from 'activitypub';
 
 const useStyles = makeStyles(theme => ({
@@ -43,7 +43,7 @@ const Home = ({ username }: P) => {
 
   return (
     <React.Fragment>
-      {outbox == null ? 'LOADING...' : <CollectionView data={outbox} merge={inbox}/>}
+      {outbox == null ? 'LOADING...' : <ActivityList data={outbox} merge={inbox}/>}
       <Fab 
         className={styles.fab} 
         aria-label="Create event"

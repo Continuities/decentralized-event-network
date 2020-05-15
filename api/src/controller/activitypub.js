@@ -22,13 +22,15 @@ import {
   getFollowing,
   getOutbox,
   getInbox,
-  getActivity
+  getActivity,
+  getAttending
 } from '../service/user.js';
 import {
   getEventId,
   getEvent,
   getOutbox as getEventOutbox,
-  getActivity as getEventActivity
+  getActivity as getEventActivity,
+  getAttendees
 } from '../service/event.js';
 import v from 'express-validator';
 import { userExists, eventExists } from '../validators.js';
@@ -117,14 +119,16 @@ router.get('/user/:userId/followers', getter(async ({ id, userId }) =>
   renderCollection(id, await getFollowers(userId))));
 router.get('/user/:userId/following', getter(async ({ id, userId }) => 
   renderCollection(id, await getFollowing(userId))));
+router.get('/user/:userId/attending', getter(async ({ id, userId }) => 
+  renderCollection(id, await getAttending(userId))));
 router.get('/user/:userId/inbox', 
-  // withAuthentication,
-  // (req, res, next:express$NextFunction) => {
-  //   if (!req.user || req.user.username !== req.params.userId) {
-  //     return res.sendStatus(401);
-  //   }
-  //   next();
-  // },
+  withAuthentication,
+  (req, res, next:express$NextFunction) => {
+    if (!req.user || req.user.username !== req.params.userId) {
+      return res.sendStatus(401);
+    }
+    next();
+  },
   getter(async ({ id, userId }) => renderOrderedCollection(id, await getInbox(userId)))
 );
 router.get('/user/:userId/outbox', getter(async ({ id, userId }) => 
@@ -136,5 +140,7 @@ router.get('/event/:eventId/outbox', getter(async ({ id, eventId }) =>
   renderOrderedCollection(id, await getEventOutbox(eventId))));
 router.get('/event/:eventId/activities/:activityId', getter(({ eventId, activityId }) =>
   getEventActivity(eventId, activityId)));
+router.get('/event/:eventId/attendees', getter(async ({ id, eventId }) =>
+  renderCollection(id, await getAttendees(eventId))));
 
 export default router;

@@ -8,7 +8,7 @@
 import { getActivityId } from './activitypub.js';
 import { Actor, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
-import { Inbox, Outbox, Follower } from '../model/api.js';
+import { Inbox, Outbox, Follower, Attendee } from '../model/api.js';
 import { toOutbox } from './activitypub.js';
 
 export const getActorId = (username:string) => {
@@ -56,7 +56,12 @@ export const getFollowers = async (username:string): Promise<Array<string>> => {
 export const getFollowing = async (username:string): Promise<Array<string>> => {
   const following = await Follower.find({ follower: getActorId(username) });
   return following.map(f => f.followee);
-}
+};
+
+export const getAttending = async (username:string):Promise<Array<string>> => {
+  const attendees = await Attendee.find({ attendee: getActorId(username) });
+  return attendees.map(f => f.event);
+};
 
 export const getInbox = async (username:string): Promise<Array<Activity>> => {
   const entries:Array<Inbox> = await Inbox

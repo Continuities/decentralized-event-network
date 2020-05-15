@@ -55,7 +55,7 @@ const EventCard = ({ event }: { event: Event }) => {
           <Link to={String(event.id)} color="textPrimary">
             { event.name }
           </Link>
-          <AttendButton eventId={String(event.id)} attending={event.attending}  />
+          <AttendButton eventId={String(event.id)} />
         </Typography>
         <Typography variant="body2" color="textSecondary" component="p">
           Starts {timeString(event.startTime)}

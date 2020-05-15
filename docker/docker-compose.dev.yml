@@ -28,7 +28,6 @@ services:
     volumes:
       - ../app:/opt/app
       - ../activitypub:/opt/activitypub # To see shared data models
-      - ../api-model:/opt/api-model # To see the symlinked libdefs in the container
     ports:
       - 3000:3000 # For docker to now where to redirect HMR queries
     command: bash -c 'cd /opt/activitypub && yarn link && cd /opt/app && yarn link "activitypub" && yarn start'

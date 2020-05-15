@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import CollectionView from './CollectionView';
+import ActivityList from './ActivityList';
 import ProfileCard from './ProfileCard';
 
 import { Actor, Activity, OrderedCollection } from 'activitypub';
@@ -24,7 +24,7 @@ const Profile = ({ userId }: P) => {
   return (
     <React.Fragment>
       { !user ? 'LOADING...' : <ProfileCard user={ user } /> }
-      { !outbox ? 'LOADING...' : <CollectionView data={outbox} /> }
+      { !outbox ? 'LOADING...' : <ActivityList data={outbox} /> }
     </React.Fragment>
   );
 }

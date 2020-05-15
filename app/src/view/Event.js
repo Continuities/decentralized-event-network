@@ -13,7 +13,7 @@ import {
   OrderedCollection 
 } from 'activitypub';
 import { useObject } from '../controller/ObjectProvider';
-import CollectionView from './CollectionView';
+import ActivityList from './ActivityList';
 
 type P = {
   event: Event
@@ -24,7 +24,7 @@ const EventView = ({ event }: P) => {
   return (
     <React.Fragment>
       <ObjectCard object={ event } />
-      { !outbox ? 'LOADING...' : <CollectionView data={outbox} /> }
+      { !outbox ? 'LOADING...' : <ActivityList data={outbox} /> }
     </React.Fragment>
   );
 }

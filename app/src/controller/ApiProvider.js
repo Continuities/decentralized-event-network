@@ -41,6 +41,9 @@ const doPost = async (endpoint:string, data:any, auth?:string) => {
 export const setFollowState = (auth:string, username:string, value:boolean) => 
   doPost(`user/${username}/follow`, { value }, auth);
 
+export const setAttendingState = (auth:string, eventUid:string, value:boolean) =>
+  doPost(`event/${eventUid}/join`, { value }, auth);
+
 export const useRemoteState = <T>(endpoint:string, initialValue:T): [ PostState<T>, T => Promise<void> ] => {
   const [ state, setState ] = useState({ loading: false, value: initialValue });
   const [ auth ] = useAuth();
