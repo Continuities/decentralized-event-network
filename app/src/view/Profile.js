@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * A user's public profile
  * @author mtownsend

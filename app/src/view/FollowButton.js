@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 /**
  * Button for displaying followstate and allowing un/follow actions
  * @author mtownsend
@@ -60,7 +59,7 @@ const FollowButton = ({ userId }: P) => {
   const setFollowing = async (follow:boolean) => {
     // TODO: Do this with client-server publishing instead of the API
     const followName = userId.substring(userId.lastIndexOf('/') + 1);
-    await setFollowState(auth, followName, !isFollowing);
+    await setFollowState(auth, followName, follow);
     // TODO: This is giving the handshake time to complete on the backend
     // Doing this without magic numbers would be nice
     setTimeout(refreshFollowing, 200);
