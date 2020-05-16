@@ -51,6 +51,7 @@ const ControllableForm = ({ submitLabel, fields, controller }: P) => {
             <DatePicker
               key={f.name}
               name={f.name}
+              label={f.label}
               onChange={onChange}
               selected={values[f.name]}
             />
