@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import ReactDatePicker from 'react-datepicker';
 import { makeStyles } from '@material-ui/core/styles';
 import { formatISO, parseISO } from 'date-fns';
@@ -81,6 +82,26 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
+const Portal = ({children}) => {
+  const portalRoot = document.getElementById("portal");
+  const el = document.createElement("div");
+
+  if (!portalRoot) {
+    console.error("No portal root found");
+    return;
+  }
+
+  React.useEffect(() => {
+    portalRoot.appendChild(el);
+    return () => {
+      portalRoot.removeChild(el);
+      return;
+    }
+  }, [el, portalRoot]);
+
+  return createPortal(children, el);
+};
+
 const DatePicker = ({name, onChange, selected, label}: P) => {
   const onChangeWrapper = (value) => {
     const event = {"target": {"name": name, "value": formatISO(value)}};
@@ -92,6 +113,7 @@ const DatePicker = ({name, onChange, selected, label}: P) => {
       <ReactDatePicker
         key={name}
         className={styles.datepicker}
+        popperContainer={Portal}
         showTimeSelect
         timeFormat="h:mm aa"
         timeIntervals={15}
