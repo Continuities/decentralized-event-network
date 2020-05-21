@@ -45,12 +45,11 @@ const ObjectProvider = ({ children }: P) => {
   );
 };
 
-// TODO: This code has turned to spaghetti. Clean it up.
-export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<void> ] => {
-  const [ cache, dispatch ] = useContext(ObjectContext);
-  const [ auth, ] = useAuth();
+const CachePopulator = () => {
 
-  const doFetch = async (signal, uri:string) => {
+  const fetching:Set<string> = new Set();
+
+  const doFetch = async (uri:string, auth:?string, signal:?AbortSignal) => {
 
     const headers:{ [string]: string } = {
       'Accept': 'application/ld+json'
@@ -67,26 +66,26 @@ export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<v
     return res.json();
   };
 
-  const fromPassthroughCache = async (signal, uri:?string, refetch = false):Promise<[any, ObjectCache]> => {
-
+  const populate = async (cache:ObjectCache, uri:?string, auth:?string, signal:?AbortSignal, refetch = false):Promise<[any, ObjectCache]> => {
     const newCache:ObjectCache = {};
 
     if (!uri) { return [ null, newCache ]; }
 
-    // If it's in the cache, don't fetch it
-    if (cache[uri] && !refetch) {
+    // If it's in the cache or already being fetched, don't fetch it
+    if ((cache[uri] && !refetch) || fetching.has(uri)) {
       return [ null, newCache ];
     }
 
-    // fetch and store the requested object first
-    const object = await doFetch(signal, uri);
+    // fetch and store the requested object
+    fetching.add(uri);
+    const object = await doFetch(uri, auth, signal);
     if (!object) { return [ null, newCache ]; }
 
     const resolveChild = async (value: any | string) => {
-      // If the child is an id, fetch it
+      // If the child is an id, populate it from the remote source
       let child = null, childCache = {};
       if (typeof value === 'string') {
-        [ child, childCache ] = await fromPassthroughCache(signal, value);
+        [ child, childCache ] = await populate(cache, value, auth, signal, refetch);
       }
       else if (value && value.id) {
         child = value;
@@ -127,13 +126,27 @@ export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<v
     return [ object, newCache ];
   };
 
-  const fetchObject = async (signal, refetch = false) =>
-    fromPassthroughCache(signal, objectId, refetch).then(([ , newCache ]) => {
+  const clearFetching = (uris:Array<string>) => 
+    uris.forEach(uri => fetching.delete(uri));
+
+  return [ populate, clearFetching ];
+};
+
+// TODO: This code has turned to spaghetti. Clean it up.
+const [ populateCache, markFetched ] = CachePopulator();
+export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<void> ] => {
+  const [ cache, dispatch ] = useContext(ObjectContext);
+  const [ auth, ] = useAuth();
+
+  const fetchObject = async (signal:?AbortSignal, refetch = false) => {
+    populateCache(cache, objectId, auth, signal, refetch).then(([ , newCache ]) => {
       dispatch({
         type: 'update',
         newCache
       });
+      markFetched(Object.keys(newCache));
     });
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -141,7 +154,6 @@ export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<v
     fetchObject(signal);
     return () => { controller.abort(); };
   }, [ objectId ]);
-
 
   const populateChildren = (toPopulate) => {
     if (toPopulate) {
