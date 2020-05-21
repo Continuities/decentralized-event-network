@@ -11,6 +11,7 @@
     "dev:down": "docker-compose -f docker/docker-compose.dev.yml down && docker-compose -f docker/docker-compose.dev.yml rm -vf",
     "dev:logs": "docker-compose -f docker/docker-compose.dev.yml logs -f",
     "dev:ps": "docker-compose -f docker/docker-compose.dev.yml ps",
+    "dev:restart": "docker-compose -f docker/docker-compose.dev.yml restart",
     "dev:uninstall": "docker-compose -f docker/docker-compose.dev.yml down --rmi all",
     "dev:connect:api": "docker exec -it docker_api_1 /bin/sh",
     "dev:connect:app": "docker exec -it docker_app_1 /bin/sh",

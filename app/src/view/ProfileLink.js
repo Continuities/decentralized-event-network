@@ -9,24 +9,30 @@
 import React from 'react';
 import { Link } from '../controller/RouterLink';
 import { Link as ExternalLink } from '@material-ui/core';
+import { Actor, Event } from 'activitypub';
 
 type P = {|
-  object: api$User | api$Event
+  object: string | Event | Actor
 |};
 
 const ProfileLink = ({ object }: P) => {
+  if (typeof object === 'string') {
+    // Maybe fetch this if it's not populated? Dunno.
+    return null;
+  }
   const localDomain = `${window.location.protocol}//${window.location.host}`;
-  if (!object.url.startsWith(localDomain)) {
+  const url = String(object.id);
+  if (!url.startsWith(localDomain)) {
     // This is a remote profile
     return (
-      <ExternalLink href={object.url}>
+      <ExternalLink href={url}>
         {object.name}
       </ExternalLink>
     );
   }
-  const url = object.type === 'Event' ? `/event/${object.id}` : `/user/${object.name}`;
+  const internalUrl = object instanceof Actor ? url : object.type === 'Event' ? `/event/${object.id}` : `/user/${object.name}`;
   return (
-    <Link color="textPrimary" to={url}>
+    <Link color="textPrimary" to={internalUrl}>
       {object.name}
     </Link>
   );

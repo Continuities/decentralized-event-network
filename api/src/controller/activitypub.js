@@ -7,6 +7,9 @@
 
 import express from 'express';
 import url from 'url';
+import { 
+  withAuthentication
+} from '../service/auth.js';
 import {
   toInbox, 
   renderCollection,
@@ -18,13 +21,16 @@ import {
   getFollowers, 
   getFollowing,
   getOutbox,
-  getActivity
+  getInbox,
+  getActivity,
+  getAttending
 } from '../service/user.js';
 import {
   getEventId,
   getEvent,
   getOutbox as getEventOutbox,
-  getActivity as getEventActivity
+  getActivity as getEventActivity,
+  getAttendees
 } from '../service/event.js';
 import v from 'express-validator';
 import { userExists, eventExists } from '../validators.js';
@@ -35,16 +41,9 @@ import type { auth$Request } from '../service/auth.js'
 const router:Router<auth$Request> = express.Router();
 
 /** 
- * Block client-server endpoints for now. 
+ * Block client-server POST for now. 
  * Implementation left as an excercise for the reader.
  */
-
-router.get('/user/:username/inbox', async (req, res) => {
-  // We don't currently support client-server publishing
-  // It's all done through the REST api
-  res.sendStatus(405);
-});
-
 router.post('/user/:username/outbox', async (req, res) => {
   // We don't currently support client-server publishing
   // It's all done through the REST api
@@ -120,6 +119,18 @@ router.get('/user/:userId/followers', getter(async ({ id, userId }) =>
   renderCollection(id, await getFollowers(userId))));
 router.get('/user/:userId/following', getter(async ({ id, userId }) => 
   renderCollection(id, await getFollowing(userId))));
+router.get('/user/:userId/attending', getter(async ({ id, userId }) => 
+  renderCollection(id, await getAttending(userId))));
+router.get('/user/:userId/inbox', 
+  withAuthentication,
+  (req, res, next:express$NextFunction) => {
+    if (!req.user || req.user.username !== req.params.userId) {
+      return res.sendStatus(401);
+    }
+    next();
+  },
+  getter(async ({ id, userId }) => renderOrderedCollection(id, await getInbox(userId)))
+);
 router.get('/user/:userId/outbox', getter(async ({ id, userId }) => 
   renderOrderedCollection(id, await getOutbox(userId))));
 router.get('/user/:userId/activities/:activityId', getter(({ userId, activityId }) =>
@@ -129,5 +140,7 @@ router.get('/event/:eventId/outbox', getter(async ({ id, eventId }) =>
   renderOrderedCollection(id, await getEventOutbox(eventId))));
 router.get('/event/:eventId/activities/:activityId', getter(({ eventId, activityId }) =>
   getEventActivity(eventId, activityId)));
+router.get('/event/:eventId/attendees', getter(async ({ id, eventId }) =>
+  renderCollection(id, await getAttendees(eventId))));
 
 export default router;

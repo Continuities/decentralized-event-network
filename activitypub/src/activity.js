@@ -6,9 +6,10 @@
  */
 
 import ObjectBase from './object.js';
+import Actor from './actor.js';
 
 class Activity extends ObjectBase {
-  actor: string;
+  actor: string | $Shape<Actor>;
   object: string | $Shape<ObjectBase> | $Shape<Activity>;
 }
 

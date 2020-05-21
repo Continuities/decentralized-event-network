@@ -60,6 +60,11 @@ export const getOutbox = async (eventUID:string): Promise<Array<Activity>> => {
   return entries.map(o => sanitized(o.activity)); 
 };
 
+export const getAttendees = async (eventUid:string):Promise<Array<string>> => {
+  const attendees = await Attendee.find({ event: getEventId(eventUid) });
+  return attendees.map(f => f.attendee);
+};
+
 export const addAttendee = async (eventUid:?string, username:?string) => {
   if (!eventUid || !username) {
     return;

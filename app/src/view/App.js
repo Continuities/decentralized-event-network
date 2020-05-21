@@ -8,10 +8,8 @@
 
 import React from 'react';
 import { Router, Redirect } from "@reach/router";
-import jwtDecode from 'jwt-decode';
 import AuthProvider, { useAuth } from '../controller/AuthProvider';
-import { withProfile } from '../controller/UserProvider';
-import { withEvent } from '../controller/EventProvider';
+import ObjectProvider, { useObject } from '../controller/ObjectProvider';
 import Home from './HomePage';
 import Login from './LoginPage';
 import Register from './RegisterPage';
@@ -49,11 +47,11 @@ const BaseRoute = () => {
 };
 
 const Main = ({ children }: { children: React$Node }) => {
-  const [ auth, ] = useAuth();
+  const [ ,username ] = useAuth();
 
-  if (auth) {
+  if (username) {
     return (
-      <NavigationFrame title={jwtDecode(auth).username}>
+      <NavigationFrame title={username}>
         {children}
       </NavigationFrame>
     );
@@ -67,27 +65,29 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>
-        <CssBaseline />
-        <Main>
-          <Container 
-            className={styles.main} 
-            component="main" 
-            maxWidth="sm"
-          >
-            <Router>
-              <BaseRoute path="/" />
-              <Home path="/home" />
-              <Login path="/login" />
-              <Register path="/register" />
-              <CreateEvent path="/create" />
-              {/* TODO: Why this no work? */}
-              <AtUser path="/@:username" />
-              <ProfilePage path="/user/:username" />
-              <EventPage path="/event/:eventId" />
-              <FourOhFour default />
-            </Router>
-          </Container>
-        </Main>
+        <ObjectProvider>
+          <CssBaseline />
+          <Main>
+            <Container 
+              className={styles.main} 
+              component="main" 
+              maxWidth="sm"
+            >
+              <Router>
+                <BaseRoute path="/" />
+                <Home path="/home" />
+                <Login path="/login" />
+                <Register path="/register" />
+                <CreateEvent path="/create" />
+                {/* TODO: Why this no work? */}
+                <AtUser path="/@:username" />
+                <ProfilePage path="/user/:username" />
+                <EventPage path="/event/:eventId" />
+                <FourOhFour default />
+              </Router>
+            </Container>
+          </Main>
+        </ObjectProvider>
       </AuthProvider>
     </ThemeProvider>
   );
@@ -98,13 +98,21 @@ const AtUser = ({ username }: {username?: string }) => (
 );
 
 const ProfilePage = ({ username }: { username?: string }) => {
-  const Page = withProfile(username)(Profile);
-  return <Page />;
+  if (!username || !process.env.DOMAIN) {
+    return <FourOhFour />;
+  }
+
+  const id = `${process.env.DOMAIN}/user/${username}`;
+  return <Profile userId={id} />;
 };
 
 const EventPage = ({ eventId }: {eventId?: string }) => {
-  const Page = withEvent(eventId)(Event);
-  return <Page />;
+  if (!eventId || !process.env.DOMAIN) {
+    return <FourOhFour />;
+  }
+  const id = `${process.env.DOMAIN}/event/${eventId}`;
+  const [ event ] = useObject(id);
+  return event == null ? null : <Event event={event} />;
 };
 
 export default App;

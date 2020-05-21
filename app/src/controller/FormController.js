@@ -29,7 +29,7 @@ export type FormErrors = {
 const FormController = (method:string, endpoint:string, onSuccess:any => void, initialValues:FormValues = {}):$FormController => (
   () => {
     const [ state, setState ] = useState({ values: initialValues, errors: {}, isSubmitting: false });
-    const [ auth, setAuth ] = useAuth();
+    const [ auth, ,setAuth ] = useAuth();
 
     const onChange = ({ target }: FormTarget) => {
       const newValues = merge(state.values, { [target.name]: target.value });

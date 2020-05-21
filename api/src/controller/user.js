@@ -8,17 +8,13 @@
 import express from 'express';
 import v from 'express-validator';
 import User from '../model/api/user.js';
-import { 
-  getActor, 
+import {  
   newUser, 
-  getInbox, 
-  getOutbox,
   addFollower,
   removeFollower
 } from '../service/user.js';
 import { createEvent } from '../service/event.js';
 import generateRSAKeypair from 'generate-rsa-keypair';
-import { mapActivity, mapUser } from '../service/api.js';
 import { 
   withAuthentication,
   validatePassword, 
@@ -69,71 +65,6 @@ router.post('/token', async (req, res) => {
 
   res.json({ token: generateToken(userObject.username) });
 });
-
-const mergeSortedActivities = (listA, listB) => {
-  const merged = [];
-  
-  let ai = 0, bi = 0;
-  while (ai < listA.length) {
-    const da = new Date(listA[ai].published);
-    while(bi < listB.length) {
-      if (listB[bi].url === listA[ai].url) {
-        bi++;
-        continue;
-      }
-      const db = new Date(listB[bi].published);
-      if (db < da) { break; }
-      merged.push(listB[bi++]);
-    }
-    merged.push(listA[ai++]);
-  }
-  if (bi < listB.length) {
-    merged.push(...listB.slice(bi));
-  }
-
-  return merged;
-};
-
-router.get('/feed', withAuthentication, async (req, res) => {
-  if (!req.user) {
-    return res.sendStatus(401);
-  }
-
-  const user = req.user.username;
-
-  const [ inbox, outbox ] = await Promise.all([ 
-    getInbox(user).then(a => Promise.all(a.map(ac => mapActivity(ac, user))).then(a => a.filter(Boolean))), 
-    getOutbox(user).then(a => Promise.all(a.map(ac => mapActivity(ac, user))).then(a => a.filter(Boolean)))
-  ]);
-
-  const feed = mergeSortedActivities(inbox, outbox);
-  res.json({ activities: feed });
-});
-
-router.get('/inbox', withAuthentication, async (req, res) => {
-  if (!req.user) {
-    return res.sendStatus(401);
-  }
-  const user = req.user.username;
-  const activities = await getInbox(req.user.username);
-  const mapped = await Promise.all(activities.map(a => mapActivity(a, user)));
-  res.json({ activities: mapped.filter(Boolean) });
-});
-
-const outbox = async (req, res) => {
-  const requestingUser = req.user && req.user.username;
-  const user = req.params.username || requestingUser;
-  if (!user) {
-    return res.sendStatus(404);
-  }
-  const activities = await getOutbox(user);
-  const mapped = await Promise.all(activities.map(a => mapActivity(a, requestingUser)));
-  // TODO: Filter based on privacy
-  res.json({ activities: mapped.filter(Boolean) });
-};
-
-router.get('/:username/outbox', outbox);
-router.get('/outbox', withAuthentication, outbox);
 
 // Creates a new event, hosted by this user
 router.put('/event', 
@@ -233,14 +164,5 @@ router.post('/:username/follow',
     res.status(201).json({ value: follow });
   }
 );
-
-// Get a user's profile data
-router.get('/:username', withAuthentication, async (req, res) => {
-  const actor = await getActor(req.params.username);
-  if (!actor) {
-    return res.sendStatus(404);
-  }
-  res.json(await mapUser(actor, req.user ? req.user.username : null));
-});
 
 export default router;

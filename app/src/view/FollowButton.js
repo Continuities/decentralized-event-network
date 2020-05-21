@@ -7,14 +7,16 @@
 
 import React from 'react';
 import {
-  IconButton,
-  CircularProgress
+  IconButton
 } from '@material-ui/core';
 import {
   PersonAdd, PersonAddDisabled
 } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import { useRemoteState } from '../controller/ApiProvider';
+import { useAuth } from '../controller/AuthProvider';
+import { useObject } from '../controller/ObjectProvider';
+import { setFollowState } from '../controller/ApiProvider';
+import { Actor, Collection } from 'activitypub';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,32 +32,48 @@ const useStyles = makeStyles(() => ({
 }));
 
 type P = {|
-  username: string,
-  followState: ?api$FollowState
+  userId: ?string
 |};
 
-const FollowButton = ({ username, followState }: P) => {
+const FollowButton = ({ userId }: P) => {
+  const styles = useStyles();
+  const [ auth, user ] = useAuth();
   
-  if (!followState) {
-    // Falsey followstate means following is impossible
-    // Don't show the button.
+  // TODO: Move id resolution further up the logical chain
+  const followingId = !process.env.DOMAIN || !user ? null : `${process.env.DOMAIN}/user/${user}/following`;
+  const [ following, refreshFollowing ] = useObject<Collection<Actor>>(followingId);
+
+  if (!following || !userId || !user || !auth) {
     return null;
   }
 
-  const styles = useStyles();
-  const [ following, setFollowing ] = useRemoteState(`user/${username}/follow`, followState === 'following');
+  let isFollowing = false;
+  for (let item of following.items) {
+    if (typeof item === 'string' && item === userId || 
+        typeof item !== 'string' && item.id === userId) {
+      isFollowing = true;
+      break;
+    }
+  }
+
+  const setFollowing = async (follow:boolean) => {
+    // TODO: Do this with client-server publishing instead of the API
+    const followName = userId.substring(userId.lastIndexOf('/') + 1);
+    await setFollowState(auth, followName, follow);
+    // TODO: This is giving the handshake time to complete on the backend
+    // Doing this without magic numbers would be nice
+    setTimeout(refreshFollowing, 200);
+  };
 
   return (
     <div className={styles.container}>
       <IconButton
-        aria-label={following.value ? 'unfollow' : 'follow'}
+        aria-label={isFollowing ? 'unfollow' : 'follow'}
         color="primary"
-        disabled={following.loading}
-        onClick={() => setFollowing(!following.value)}
+        onClick={() => setFollowing(!isFollowing)}
       >
-        {following.value ? <PersonAddDisabled /> : <PersonAdd />}
+        {isFollowing ? <PersonAddDisabled /> : <PersonAdd />}
       </IconButton>
-      {following.loading && <CircularProgress className={styles.progress} />}
     </div>
   );
 };

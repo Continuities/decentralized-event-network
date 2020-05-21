@@ -9,11 +9,11 @@
  * it's in scope (for the API), but ignore it when 
  * it isn't (for the app) */
 // $FlowFixMe
-class Object /* :: extends Mongoose$Document */ {
+class ObjectBase /* :: extends Mongoose$Document */ {
   id: string | number;
   type: string;
   name: ?string;
-  attributedTo: ?string;
+  attributedTo: ?(string | ObjectBase);
   content: ?string;
   summary: ?string;
   published: ?string;
@@ -29,4 +29,4 @@ class Object /* :: extends Mongoose$Document */ {
   bcc: ?Array<string>;
 }
 
-export default Object;
+export default ObjectBase;

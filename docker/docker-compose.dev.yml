@@ -24,13 +24,12 @@ services:
     environment:
       - NODE_ENV=development
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - DOMAIN=http://localhost
     volumes:
       - ../app:/opt/app
       - ../activitypub:/opt/activitypub # To see shared data models
-      - ../api-model:/opt/api-model # To see the symlinked libdefs in the container
     ports:
       - 3000:3000 # For docker to now where to redirect HMR queries
-    command: bash -c 'cd /opt/activitypub && yarn link && cd /opt/app && yarn link "activitypub" && yarn start'
 
   api:
     build:
@@ -48,7 +47,7 @@ services:
     ports:
       - 8080:8080 # unbind this in prod
       - 9229:9229 # node debugger
-    command: bash -c 'cd /opt/activitypub && yarn link && cd /opt/api && yarn link "activitypub" && yarn start'
+    command: bash -c 'cd /opt/api/node_modules && rm -rf activitypub && ln -s ../../activitypub activitypub && cd /opt/api && yarn start'
     depends_on:
       - db
 
