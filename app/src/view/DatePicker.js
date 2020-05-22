@@ -31,6 +31,10 @@ const useStyles = makeStyles((theme) => {
       paddingTop: '6px',
       marginTop: '16px',
       marginBottom: '8px',
+      width: '100%',
+      '& .react-datepicker-wrapper': {
+        display: 'inline',
+      },
     },
     datepicker: {
       backgroundColor: theme.palette.background.paper,
@@ -42,6 +46,7 @@ const useStyles = makeStyles((theme) => {
       color: theme.palette.text.primary,
       fontSize: theme.typography.fontSize,
       lineHeight: '18px',
+      width: '100%',
       '&:hover': {
         borderColor: theme.palette.text.primary,
         borderTopColor: 'transparent',
