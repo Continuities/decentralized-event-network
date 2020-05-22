@@ -38,7 +38,11 @@ module.exports = {
       NODE_ENV: 'development',
       DOMAIN: 'http://localhost'
     }),
-    new FlowWebpackPlugin(),
+    new FlowWebpackPlugin({
+      failOnErrorWatch: false,
+      failOnError: false,
+      reportingSeverity: 'warning'
+    }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "static", "index.html"),
       filename: 'index.html'
