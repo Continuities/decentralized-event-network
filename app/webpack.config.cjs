@@ -10,7 +10,13 @@ module.exports = {
     rules: [{
       test: /\.(js|jsx)$/,
       exclude: /(node_modules|bower_components)/,
-      use: [ "babel-loader", 'eslint-loader' ]
+      use: [
+        { loader: 'babel-loader' },
+        {
+          loader: "eslint-loader",
+          options: { emitWarning: true }
+        },
+      ]
     }, {
       test: /\.css$/,
       use: ["style-loader", "css-loader"]
