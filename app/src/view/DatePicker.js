@@ -145,6 +145,7 @@ const DatePicker = ({name, onChange, selected, label}: P) => {
         key={name}
         className={styles.datepicker}
         popperContainer={Portal}
+        minDate={new Date()}
         showTimeSelect
         timeFormat="h:mm aa"
         timeIntervals={15}
