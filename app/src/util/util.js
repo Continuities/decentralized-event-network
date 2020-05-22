@@ -15,3 +15,8 @@ export const localISODate = () => {
   const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
   return (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
 };
+
+export const delay = (millis:number):Promise<void> => 
+  new Promise((resolve) => {
+    setTimeout(() => resolve(), millis);
+  });

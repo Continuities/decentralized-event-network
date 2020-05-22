@@ -37,9 +37,9 @@ const Home = ({ username }: P) => {
 
   const userId = `${process.env.DOMAIN}/user/${username}`;
 
-  const [ user ] = useObject<Actor>(userId);
-  const [ outbox ] = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
-  const [ inbox ] = useObject<OrderedCollection<Activity>>(user ? user.inbox : null);
+  const user = useObject<Actor>(userId);
+  const outbox = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
+  const inbox = useObject<OrderedCollection<Activity>>(user ? user.inbox : null);
 
   return (
     <React.Fragment>

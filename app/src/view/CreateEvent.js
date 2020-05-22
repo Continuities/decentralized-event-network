@@ -12,7 +12,7 @@ import EventForm from './EventForm';
 import FormController from '../controller/FormController';
 import { Link } from '../controller/RouterLink';
 import { navigate } from '@reach/router';
-import { localISODate } from '../util';
+import { localISODate } from '../util/util';
 import { 
   Container,
   Card,

@@ -79,7 +79,7 @@ type P = {|
 const NavigationFrame = ({ title, children }: P) => {
   const styles = useStyles();
   const theme = useTheme();
-  const [ auth, ,setAuth ] = useAuth();
+  const { token, setToken } = useAuth();
   const [ mobileOpen, setMobileOpen ] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -90,11 +90,11 @@ const NavigationFrame = ({ title, children }: P) => {
     <React.Fragment>
       <div className={styles.toolbar} />
       <Divider />
-      { auth && (
+      { token && (
         <React.Fragment>
           <Divider className={styles.bottom} />
           <List>
-            <MenuItem text="Sign Out" Icon={ExitToApp} onClick={() => setAuth(null)} />
+            <MenuItem text="Sign Out" Icon={ExitToApp} onClick={() => setToken(null)} />
           </List>
         </React.Fragment>
       )}
@@ -166,7 +166,7 @@ const NavigationFrame = ({ title, children }: P) => {
 
 type ItemProps = {|
   className?: string,
-  onClick?:Event => void,
+  onClick?:Event => any,
   text: string, 
   Icon: React$ComponentType<any>
 |};

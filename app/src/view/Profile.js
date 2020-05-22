@@ -17,8 +17,8 @@ type P = {
 };
 
 const Profile = ({ userId }: P) => {
-  const [ user ] = useObject<Actor>(userId);
-  const [ outbox ] = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
+  const user = useObject<Actor>(userId);
+  const outbox = useObject<OrderedCollection<Activity>>(user ? user.outbox : null);
 
   return (
     <React.Fragment>

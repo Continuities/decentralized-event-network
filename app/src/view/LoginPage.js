@@ -23,16 +23,16 @@ import {
 
 const Login = () => {
   const styles = useCoreStyles();
-  const [ auth, ,setAuth ] = useAuth();
+  const { token, setToken } = useAuth();
   const formController = FormController(
     'POST', 
     '/api/user/token',
     res => {
       navigate('/home');
-      setAuth(res.token)
+      setToken(res.token)
     }
   );
-  if (auth) {
+  if (token) {
     return <Redirect to='/home' noThrow />;
   }
   return (

@@ -14,29 +14,52 @@ type ObjectCache = {
   [ObjectId]: any
 };
 
-type ObjectContextType = [ ObjectCache, (UpdateAction) => void ];
+type ObjectContextType = [ ObjectCache, (Action) => void ];
 const ObjectContext = createContext<ObjectContextType>([ {}, () => {} ]);
 
 type P = {|
   children: React$Node
 |};
 
+type Action = UpdateAction | ClearAction;
+
 type UpdateAction = {|
   type: 'update',
   newCache: ObjectCache
 |};
 
+type ClearAction = {|
+  type: 'clear'
+|};
+
+const deepCopy = (o) => JSON.parse(JSON.stringify(o));
+
 const cacheReducer = (cache, action) => {
-  if (action.type === 'update') {
+  switch (action.type) {
+  case 'update': {
     const updatedCache = { ...cache, ...action.newCache };
     console.log('Updated object cache', updatedCache);
     return updatedCache;
   }
-  return cache;
+  case 'clear': {
+    console.log('Wiping cache');
+    return {};
+  }
+  default:
+    return cache;
+  }
 };
 
 const ObjectProvider = ({ children }: P) => {
-  const [ cache, dispatch ] = useReducer<ObjectCache, UpdateAction>(cacheReducer, {});
+  const [ cache, dispatch ] = useReducer<ObjectCache, Action>(cacheReducer, {});
+  const { token } = useAuth();
+
+  useEffect(() => {
+    // Clear the cache when auth changes
+    dispatch({
+      type: 'clear'
+    });
+  }, [ token ]);
 
   return (
     <ObjectContext.Provider value={[ cache, dispatch ]}>
@@ -49,14 +72,14 @@ const CachePopulator = () => {
 
   const fetching:Set<string> = new Set();
 
-  const doFetch = async (uri:string, auth:?string, signal:?AbortSignal) => {
+  const doFetch = async (uri:string, token:?string, signal:?AbortSignal) => {
 
     const headers:{ [string]: string } = {
       'Accept': 'application/ld+json'
     };
 
-    if (auth) {
-      headers.Authorization = `Bearer ${auth}`
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
     }
     const res = await fetch(uri, { headers, signal });
     if (!res.ok) {
@@ -66,7 +89,7 @@ const CachePopulator = () => {
     return res.json();
   };
 
-  const populate = async (cache:ObjectCache, uri:?string, auth:?string, signal:?AbortSignal, refetch = false):Promise<[any, ObjectCache]> => {
+  const populate = async (cache:ObjectCache, uri:?string, token:?string, signal:?AbortSignal, refetch = false):Promise<[any, ObjectCache]> => {
     const newCache:ObjectCache = {};
 
     if (!uri) { return [ null, newCache ]; }
@@ -78,14 +101,14 @@ const CachePopulator = () => {
 
     // fetch and store the requested object
     fetching.add(uri);
-    const object = await doFetch(uri, auth, signal);
+    const object = await doFetch(uri, token, signal);
     if (!object) { return [ null, newCache ]; }
 
     const resolveChild = async (value: any | string) => {
       // If the child is an id, populate it from the remote source
       let child = null, childCache = {};
       if (typeof value === 'string') {
-        [ child, childCache ] = await populate(cache, value, auth, signal, refetch);
+        [ child, childCache ] = await populate(cache, value, token, signal);
       }
       else if (value && value.id) {
         child = value;
@@ -132,14 +155,13 @@ const CachePopulator = () => {
   return [ populate, clearFetching ];
 };
 
-// TODO: This code has turned to spaghetti. Clean it up.
 const [ populateCache, markFetched ] = CachePopulator();
-export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<void> ] => {
+export const useObject = <T:ObjectBase> (objectId:?string):(?T) => {
   const [ cache, dispatch ] = useContext(ObjectContext);
-  const [ auth, ] = useAuth();
+  const { token } = useAuth();
 
   const fetchObject = async (signal:?AbortSignal, refetch = false) => {
-    populateCache(cache, objectId, auth, signal, refetch).then(([ , newCache ]) => {
+    populateCache(cache, objectId, token, signal, refetch).then(([ , newCache ]) => {
       dispatch({
         type: 'update',
         newCache
@@ -148,12 +170,17 @@ export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<v
     });
   }
 
+  const needsFetch:boolean = objectId != null && !cache[objectId];
+
   useEffect(() => {
+    if (!needsFetch) {
+      return;
+    }
     const controller = new AbortController();
     const { signal } = controller;
     fetchObject(signal);
     return () => { controller.abort(); };
-  }, [ objectId ]);
+  }, [ objectId, needsFetch ]);
 
   const populateChildren = (toPopulate) => {
     if (toPopulate) {
@@ -184,9 +211,26 @@ export const useObject = <T:ObjectBase> (objectId:?string):[ ?T, () => Promise<v
   
   populateChildren(typed);
 
-  return [ typed, fetchObject.bind(null, null, true) ];
+  return typed;
 };
 
-const deepCopy = (o) => JSON.parse(JSON.stringify(o));
+export const useInvalidate = () => {
+  const [ cache, dispatch ] = useContext(ObjectContext);
+  const { token } = useAuth();
+
+  return async (objectId:string) => {
+    if (!cache[objectId]) {
+      // Don't fetch stuff that hasn't been needed
+      return;
+    }
+    populateCache(cache, objectId, token, null, true).then(([ , newCache ]) => {
+      dispatch({
+        type: 'update',
+        newCache
+      });
+      markFetched(Object.keys(newCache));
+    });
+  };
+};
 
 export default ObjectProvider;

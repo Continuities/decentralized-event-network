@@ -15,8 +15,9 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { useAuth } from '../controller/AuthProvider';
 import { useObject } from '../controller/ObjectProvider';
-import { setFollowState } from '../controller/ApiProvider';
+import { useFollowToggle } from '../service/Api';
 import { Actor, Collection } from 'activitypub';
+import { getUserId, getUsername } from '../service/ActivityPub';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -32,18 +33,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 type P = {|
-  userId: ?string
+  userId: string
 |};
 
 const FollowButton = ({ userId }: P) => {
   const styles = useStyles();
-  const [ auth, user ] = useAuth();
+  const { token, username } = useAuth();
+  const setFollowing = useFollowToggle(getUsername(userId));
   
-  // TODO: Move id resolution further up the logical chain
-  const followingId = !process.env.DOMAIN || !user ? null : `${process.env.DOMAIN}/user/${user}/following`;
-  const [ following, refreshFollowing ] = useObject<Collection<Actor>>(followingId);
+  const followingId = !username ? null : `${getUserId(username)}/following`;
+  const following = useObject<Collection<Actor>>(followingId);
 
-  if (!following || !userId || !user || !auth) {
+  if (!following || !username || !token) {
     return null;
   }
 
@@ -55,15 +56,6 @@ const FollowButton = ({ userId }: P) => {
       break;
     }
   }
-
-  const setFollowing = async (follow:boolean) => {
-    // TODO: Do this with client-server publishing instead of the API
-    const followName = userId.substring(userId.lastIndexOf('/') + 1);
-    await setFollowState(auth, followName, follow);
-    // TODO: This is giving the handshake time to complete on the backend
-    // Doing this without magic numbers would be nice
-    setTimeout(refreshFollowing, 200);
-  };
 
   return (
     <div className={styles.container}>

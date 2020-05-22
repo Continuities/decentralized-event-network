@@ -14,8 +14,9 @@ import {
 } from '@material-ui/icons';
 import { useAuth } from '../controller/AuthProvider';
 import { makeStyles } from '@material-ui/core/styles';
-import { setAttendingState } from '../controller/ApiProvider';
+import { useAttendingToggle } from '../service/Api';
 import { useObject } from '../controller/ObjectProvider';
+import { getUserId, getEventUid } from '../service/ActivityPub';
 
 import type { Collection, Actor } from 'activitypub';
 
@@ -39,13 +40,12 @@ type P = {|
 const AttendButton = ({ eventId }: P) => {
 
   const styles = useStyles();
-  const [ auth, user ] = useAuth();
+  const { token, username } = useAuth();
+  const setAttending = useAttendingToggle(getEventUid(eventId));
   
-  // TODO: Move id resolution further up the logical chain
-  const attendingId = !process.env.DOMAIN || !user ? null : `${process.env.DOMAIN}/user/${user}/attending`;
-
-  const [ attending, refreshAttending ] = useObject<Collection<Actor>>(attendingId);
-  if (!attending || !user || !auth || !attendingId) {
+  const attendingId = !username ? null : `${getUserId(username)}/attending`;
+  const attending = useObject<Collection<Actor>>(attendingId);
+  if (!attending || !username || !token || !attendingId) {
     return null;
   }
 
@@ -57,15 +57,6 @@ const AttendButton = ({ eventId }: P) => {
       break;
     }
   }
-
-  const setAttending = async (attend:boolean) => {
-    // TODO: Do this with client-server publishing instead of the API
-    const eventUid = eventId.substring(eventId.lastIndexOf('/') + 1);
-    await setAttendingState(auth, eventUid, attend);
-    // TODO: This is giving the handshake time to complete on the backend
-    // Doing this without magic numbers would be nice
-    setTimeout(refreshAttending, 200);
-  };
 
   return (
     <div className={styles.container}>

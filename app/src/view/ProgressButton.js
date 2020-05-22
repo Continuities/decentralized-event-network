@@ -12,7 +12,7 @@ import {
   LinearProgress
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { cls } from '../util';
+import { cls } from '../util/util';
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {

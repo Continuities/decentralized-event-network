@@ -11,27 +11,36 @@ import jwtDecode from 'jwt-decode';
 
 const STORAGE_KEY = 'auth';
 
-type AuthContextType = [ ?string, ?string, (?string) => void ];
-const AuthContext = createContext<AuthContextType>([ null, null, () => {} ]);
+type AuthContextType = {|
+  token: ?string,
+  username: ?string,
+  setToken: ?string => void
+|};
+
+const AuthContext = createContext<AuthContextType>({
+  token: null,
+  username: null,
+  setToken: () => {}
+});
 
 type P = {|
   children: React$Node
 |};
 
 const AuthProvider = ({ children }: P) => {
-  const [ auth, setAuth ] = useState(localStorage.getItem(STORAGE_KEY));
-  const set = token => {
-    if (token) {
-      localStorage.setItem(STORAGE_KEY, token);
+  const [ token, setToken ] = useState(localStorage.getItem(STORAGE_KEY));
+  const set = t => {
+    if (t) {
+      localStorage.setItem(STORAGE_KEY, t);
     }
     else {
       localStorage.removeItem(STORAGE_KEY);
     }
-    setAuth(token);
+    setToken(t);
   };
-  const username = auth && jwtDecode(auth).username;
+  const username = token && jwtDecode(token).username;
   return (
-    <AuthContext.Provider value={[ auth, username, set ]}>
+    <AuthContext.Provider value={{ token, username, setToken: set }}>
       { children }
     </AuthContext.Provider>
   );
@@ -41,11 +50,11 @@ export const useAuth = ():AuthContextType => useContext(AuthContext);
 
 export const requireUser = <Com: React$ComponentType<*>>(Component:Com) => 
   (props:React$ElementConfig<Com>) => {
-    const [ auth, ] = useAuth();
-    if (!auth) {
+    const { token, username } = useAuth();
+    if (!token) {
       return <Redirect to='/login' noThrow />
     }
-    return <Component {...props} username={jwtDecode(auth).username}/>;
+    return <Component {...props} username={username}/>;
   };
 
 export default AuthProvider;

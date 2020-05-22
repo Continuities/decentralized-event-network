@@ -20,7 +20,7 @@ type P = {
 };
 
 const EventView = ({ event }: P) => {
-  const [ outbox ] = useObject<OrderedCollection<Activity>>(event.outbox);
+  const outbox = useObject<OrderedCollection<Activity>>(event.outbox);
   return (
     <React.Fragment>
       <ObjectCard object={ event } />

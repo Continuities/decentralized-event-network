@@ -42,12 +42,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 const BaseRoute = () => {
-  const [ auth, ] = useAuth();
-  return <Redirect noThrow to={auth ? '/home' : '/login'} />;
+  const { token } = useAuth();
+  return <Redirect noThrow to={token ? '/home' : '/login'} />;
 };
 
 const Main = ({ children }: { children: React$Node }) => {
-  const [ ,username ] = useAuth();
+  const { username } = useAuth();
 
   if (username) {
     return (
@@ -111,7 +111,7 @@ const EventPage = ({ eventId }: {eventId?: string }) => {
     return <FourOhFour />;
   }
   const id = `${process.env.DOMAIN}/event/${eventId}`;
-  const [ event ] = useObject(id);
+  const event = useObject(id);
   return event == null ? null : <Event event={event} />;
 };
 
