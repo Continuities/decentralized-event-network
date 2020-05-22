@@ -11,6 +11,8 @@ import ReactDatePicker from 'react-datepicker';
 import { makeStyles } from '@material-ui/core/styles';
 import { formatISO, parseISO } from 'date-fns';
 
+import 'react-datepicker/dist/react-datepicker.css';
+
 type FormTarget = { target: { name: string, value: string }};
 type P = {
   name: string,

@@ -15,8 +15,6 @@ import ProgressButton from './ProgressButton';
 import { nilControls } from '../controller/FormController';
 import DatePicker from './DatePicker';
 
-import 'react-datepicker/dist/react-datepicker.css';
-
 import type { $FormController } from '../controller/FormController';
 
 type FormField = {|
