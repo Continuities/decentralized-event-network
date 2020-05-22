@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  app:
+    environment:
+      - NODE_ENV=development
+      - EXTRA_WEBPACK_DEV_SERVER_ARGS
+      - DOMAIN=http://localhost
+    volumes:
+      - ../app:/opt/app
+      - ../activitypub:/opt/activitypub # To see shared data models
+    ports:
+      - 3000:3000 # For docker to know where to redirect HMR queries
+
+  api:
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ../api:/opt/api
+      - ../activitypub:/opt/activitypub # To see shared data models
+      - /opt/api/node_modules # anonymous volume for node_modules only
+    ports:
+      - 8080:8080 # unbind this in prod
+      - 9229:9229 # node debugger
+    command: bash -c 'cd /opt/api/node_modules && rm -rf activitypub && ln -s ../../activitypub activitypub && cd /opt/api && yarn start'
+
+  db:
+    ports:
+      - 27017:27017 # unbind this in prod
