@@ -3,7 +3,7 @@ set -e
 
 # Link local ActivityPub npm package
 (mkdir -p ./app/node_modules && rm -rf ./app/node_modules/activitypub && cd app/node_modules && ln -s ../../activitypub activitypub)
-(mkdir -p ./api/node_modules && rm -rf ./api/node_modules/activitypub && cd app/node_modules && ln -s ../../activitypub activitypub)
+(mkdir -p ./api/node_modules && rm -rf ./api/node_modules/activitypub && cd api/node_modules && ln -s ../../activitypub activitypub)
 
 # Build app and api containers
 docker-compose -f docker/docker-compose.dev.yml build
