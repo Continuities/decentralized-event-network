@@ -81,12 +81,36 @@ const useStyles = makeStyles((theme) => {
         height: '57px',
       },
     },
+    '@global': {
+      '#datepickers .react-datepicker__header, #datepickers .react-datepicker__current-month, #datepickers .react-datepicker__day-name, #datepickers .react-datepicker-time__header': {
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.text.primary,
+        borderColor: borderColor,
+      },
+      '#datepickers .react-datepicker, #datepickers .react-datepicker__day, #datepickers .react-datepicker__time, #datepickers .react-datepicker__time-container': {
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderColor: borderColor,
+      },
+      '#datepickers .react-datepicker__time-list-item': {
+        height: 'auto',
+        padding: '7px 10px',
+      },
+      '#datepickers .react-datepicker__day--selected, #datepickers .react-datepicker__time-list-item--selected': {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+      },
+      '#datepickers .react-datepicker__day:hover, #datepickers .react-datepicker__time-list-item:hover': {
+        backgroundColor: theme.palette.background.default,
+      },
+    },
   };
 });
 
 const Portal = ({children}) => {
   const portalRoot = document.getElementById("portal");
   const el = document.createElement("div");
+  el.id = "datepickers";
 
   if (!portalRoot) {
     console.error("No portal root found");
