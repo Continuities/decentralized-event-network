@@ -11,15 +11,16 @@ import User from '../model/api/user.js';
 import {  
   newUser, 
   addFollower,
-  removeFollower
+  removeFollower,
+  getUserModel
 } from '../service/user.js';
 import { createEvent } from '../service/event.js';
 import generateRSAKeypair from 'generate-rsa-keypair';
 import { 
-  withAuthentication,
   validatePassword, 
-  generateToken 
-} from '../service/auth.js';
+  generateToken,
+  getUser
+} from '../service/security.js';
 import {
   matchesPassword,
   uniqueEmail,
@@ -28,11 +29,8 @@ import {
 } from '../validators.js';
 
 import type { Router } from 'express';
-import type { auth$Request } from '../service/auth.js'
 
-const emailRegex = /^([a-zA-Z0-9_\-.]+)@([a-zA-Z0-9_\-.]+)\.([a-zA-Z]{2,5})$/;
-
-const router:Router<auth$Request> = express.Router();
+const router:Router<> = express.Router();
 
 const dateValidator = async value => {
   if (isNaN(new Date(value).getTime())) {
@@ -48,27 +46,22 @@ router.post('/token', async (req, res) => {
     return res.sendStatus(401);
   }
 
-  const isEmail = emailRegex.test(user);
+  const userModel = await getUserModel(user);
 
-  const userObject = isEmail ? 
-    await User.findOne({ email: user }) :
-    await User.findOne({ username: user });
-
-  if (!userObject) {
+  if (!userModel) {
     return res.sendStatus(401);
   }
 
-  const isPasswordValid = await validatePassword(password, userObject.password);
+  const isPasswordValid = await validatePassword(password, userModel.password);
   if (!isPasswordValid) {
     return res.sendStatus(401);
   }
 
-  res.json({ token: generateToken(userObject.username) });
+  res.json({ token: generateToken(userModel.username) });
 });
 
 // Creates a new event, hosted by this user
 router.put('/event', 
-  withAuthentication,
   v.check('name').isLength({ min: 4 }).withMessage('Event name must be at least 4 characters long'),
   v.check('start').custom(dateValidator),
   v.check('end').custom(dateValidator),
@@ -80,14 +73,15 @@ router.put('/event',
       return res.status(422).json({ errors: errors.array() });
     }
 
-    if (!req.user) {
+    const user = getUser();
+    if (!user || !user.name) {
       return res.sendStatus(401);
     }
 
     const { start, end } = (req.body:Object);
     const [ eventId, asyncAction ] = await createEvent(
       (req.body:Object).name,
-      req.user.username,
+      user.name,
       new Date(start),
       new Date(end)
     );
@@ -139,7 +133,6 @@ router.put('/:username',
 );
 
 router.post('/:username/follow', 
-  withAuthentication,
   v.check('value').isBoolean(),
   async (req, res) => {
 
@@ -148,17 +141,18 @@ router.post('/:username/follow',
       return res.status(422).json({ errors: errors.array() });
     }
 
-    if (!req.user) {
+    const user = getUser();
+    if (!user) {
       return res.sendStatus(401);
     }
 
     const follow:boolean = (req.body:Object).value;
 
     if (follow) {
-      await addFollower(req.params.username, req.user.username);
+      await addFollower(req.params.username, user.name);
     }
     else {
-      await removeFollower(req.params.username, req.user.username);
+      await removeFollower(req.params.username, user.name);
     }
 
     res.status(201).json({ value: follow });

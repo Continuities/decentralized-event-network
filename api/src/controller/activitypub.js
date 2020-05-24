@@ -8,8 +8,8 @@
 import express from 'express';
 import url from 'url';
 import { 
-  withAuthentication
-} from '../service/auth.js';
+  getUser
+} from '../service/security.js';
 import {
   toInbox, 
   renderCollection,
@@ -36,9 +36,8 @@ import v from 'express-validator';
 import { userExists, eventExists } from '../validators.js';
 
 import type { Router } from 'express';
-import type { auth$Request } from '../service/auth.js'
 
-const router:Router<auth$Request> = express.Router();
+const router:Router<> = express.Router();
 
 /** 
  * Block client-server POST for now. 
@@ -122,9 +121,9 @@ router.get('/user/:userId/following', getter(async ({ id, userId }) =>
 router.get('/user/:userId/attending', getter(async ({ id, userId }) => 
   renderCollection(id, await getAttending(userId))));
 router.get('/user/:userId/inbox', 
-  withAuthentication,
   (req, res, next:express$NextFunction) => {
-    if (!req.user || req.user.username !== req.params.userId) {
+    const user = getUser();
+    if (!user || user.id !== getActorId(req.params.userId)) {
       return res.sendStatus(401);
     }
     next();

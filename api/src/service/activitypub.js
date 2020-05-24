@@ -13,7 +13,7 @@ import {
   Attendee
 } from '../model/api.js';
 import uuid from 'short-uuid';
-import fetch from 'node-fetch';
+import { get, post } from './network.js';
 
 import type { ObjectBase } from 'activitypub';
 
@@ -340,32 +340,13 @@ export const getObject = async (id:string | Object): Promise<?any> => {
   }
 
   // TODO: Request-level cacheing to prevent redundant fetch or db lookups
-  let res = null;
   try {
-    res = await fetch(getUrlForId(id), {
-      method: 'GET',
-      headers: {
-        // TODO: authentication?
-        'Accept': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams'
-      }
-    });
+    const result = await get(getUrlForId(id));
+    return JSON.parse(result);
   } catch(e) {
-    // Request failed, so it's not okay
-  }
-  if (!res || !res.ok) {
     return null;
   }
-  return res.json();
 };
 
-const postObject = async (to, object): Promise<boolean> => {
-  const res = await fetch(getUrlForId(to), {
-    method: 'POST',
-    headers: {
-      // TODO: authentication?
-      'Content-Type': 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'
-    },
-    body: JSON.stringify(object)
-  });
-  return res.ok;
-};
+const postObject = async (to, object): Promise<string> => 
+  post(getUrlForId(to), object);

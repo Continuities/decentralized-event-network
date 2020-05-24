@@ -7,19 +7,19 @@
 
 import express from 'express';
 import v from 'express-validator';
-import { withAuthentication } from '../service/auth.js';
+import {
+  getUser 
+} from '../service/security.js';
 import { 
   addAttendee,
   removeAttendee
 } from '../service/event.js';
 
 import type { Router } from 'express';
-import type { auth$Request } from '../service/auth.js'
 
-const router:Router<auth$Request> = express.Router();
+const router:Router<> = express.Router();
 
 router.post('/:eventId/join', 
-  withAuthentication, 
   v.check('value').isBoolean(),
   async (req, res) => {
 
@@ -28,7 +28,7 @@ router.post('/:eventId/join',
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const user = req.user ? req.user.username : null;
+    const user = getUser();
     if (!user) {
       // TODO: Anonymous event attendance?
       return res.sendStatus(401);
@@ -37,10 +37,10 @@ router.post('/:eventId/join',
     const attend:boolean = (req.body:Object).value;
 
     if (attend) {
-      addAttendee(req.params.eventId, user);
+      addAttendee(req.params.eventId, user.name);
     }
     else {
-      removeAttendee(req.params.eventId, user);
+      removeAttendee(req.params.eventId, user.name);
     }
 
     res.status(201).json({ value: attend });

@@ -8,7 +8,7 @@
 import { getActivityId } from './activitypub.js';
 import { Actor, Activity } from '../model/activitypub.js';
 import { sanitized } from './db.js';
-import { Inbox, Outbox, Follower, Attendee } from '../model/api.js';
+import { User, Inbox, Outbox, Follower, Attendee } from '../model/api.js';
 import { toOutbox } from './activitypub.js';
 
 export const getActorId = (username:string) => {
@@ -36,6 +36,14 @@ export const newUser = async (name:string, pubKey:string) => {
       publicKeyPem: pubKey
     }
   }).save();
+};
+
+const emailRegex = /^([a-zA-Z0-9_\-.]+)@([a-zA-Z0-9_\-.]+)\.([a-zA-Z]{2,5})$/;
+export const getUserModel = (usernameOrEmail:string): Promise<?User> => {
+  const isEmail = emailRegex.test(usernameOrEmail);
+  return isEmail ? 
+    User.findOne({ email: usernameOrEmail }) :
+    User.findOne({ username: usernameOrEmail });
 };
 
 export const getActor = async (username:string): Promise<?Actor> => {
