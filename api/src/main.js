@@ -11,6 +11,7 @@ import {
 import UserController from './controller/user.js';
 import EventController from './controller/event.js';
 import ActivityPubController from './controller/activitypub.js';
+import WebfingerController from './controller/webfinger.js';
 
 dotenv.config();
 
@@ -43,6 +44,8 @@ app.use('/api/event',
     next();
   },
   EventController);
+
+app.use('/.well-known', WebfingerController);
 
 app.use('/', ActivityPubController);
 

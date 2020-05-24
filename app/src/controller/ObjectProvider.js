@@ -32,6 +32,15 @@ type ClearAction = {|
   type: 'clear'
 |};
 
+const isLocal = (uri:string):boolean => {
+  if (!process.env.DOMAIN) {
+    return false;
+  }
+  const local = new URL(process.env.DOMAIN);
+  const url = new URL(uri);
+  return local.host === url.host;
+};
+
 const deepCopy = (o) => JSON.parse(JSON.stringify(o));
 
 const cacheReducer = (cache, action) => {
@@ -78,7 +87,9 @@ const CachePopulator = () => {
       'Accept': 'application/ld+json'
     };
 
-    if (token) {
+    // Only send our auth token when making local requests
+    // TODO: Support authentication against multiple hosts
+    if (token && isLocal(uri)) {
       headers.Authorization = `Bearer ${token}`
     }
     const res = await fetch(uri, { headers, signal });

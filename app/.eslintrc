@@ -18,7 +18,8 @@
       2,
       "always"
     ],
-    "flowtype/space-after-type-colon": "off"
+    "flowtype/space-after-type-colon": "off",
+    "react/display-name": "off"
   },
   "settings": {
     "react": {

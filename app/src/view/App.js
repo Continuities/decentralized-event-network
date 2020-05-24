@@ -17,6 +17,7 @@ import CreateEvent from './CreateEvent';
 import FourOhFour from './FourOhFour';
 import Profile from './Profile';
 import Event from './Event';
+import { parseQueryString } from '../util/util';
 import NavigationFrame from './NavigationFrame';
 import { 
   makeStyles, 
@@ -46,20 +47,6 @@ const BaseRoute = () => {
   return <Redirect noThrow to={token ? '/home' : '/login'} />;
 };
 
-const Main = ({ children }: { children: React$Node }) => {
-  const { username } = useAuth();
-
-  if (username) {
-    return (
-      <NavigationFrame title={username}>
-        {children}
-      </NavigationFrame>
-    );
-  }
-
-  return children;
-};
-
 const App = () => {
   const styles = useStyles();
   return (
@@ -67,7 +54,7 @@ const App = () => {
       <AuthProvider>
         <ObjectProvider>
           <CssBaseline />
-          <Main>
+          <NavigationFrame>
             <Container 
               className={styles.main} 
               component="main" 
@@ -81,12 +68,13 @@ const App = () => {
                 <CreateEvent path="/create" />
                 {/* TODO: Why this no work? */}
                 <AtUser path="/@:username" />
-                <ProfilePage path="/user/:username" />
+                <APProfilePage path="/user/:username" />
+                <ProfilePage path="/user" />
                 <EventPage path="/event/:eventId" />
                 <FourOhFour default />
               </Router>
             </Container>
-          </Main>
+          </NavigationFrame>
         </ObjectProvider>
       </AuthProvider>
     </ThemeProvider>
@@ -97,7 +85,15 @@ const AtUser = ({ username }: {username?: string }) => (
   <Redirect to={`/user/${username || ''}`} noThrow />
 );
 
-const ProfilePage = ({ username }: { username?: string }) => {
+const ProfilePage = ({ location }: any) => {
+  const actorId = parseQueryString(location.search).get('id');
+  if (!actorId) {
+    return <FourOhFour />;
+  }
+  return <Profile userId={actorId} />;
+};
+
+const APProfilePage = ({ username }: { username?: string }) => {
   if (!username || !process.env.DOMAIN) {
     return <FourOhFour />;
   }

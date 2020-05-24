@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import { useAuth } from '../controller/AuthProvider';
+import SearchBar from './SearchBar';
 import { 
   AppBar,
   Hidden,
@@ -15,19 +16,23 @@ import {
   Divider,
   Toolbar,
   IconButton,
-  Typography,
   SwipeableDrawer,
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Tooltip
 } from '@material-ui/core';
 import {
   Menu as MenuIcon,
-  ExitToApp
+  LockOpen,
+  Lock,
+  AccountCircle
 } from '@material-ui/icons';
-import { Link } from '../controller/RouterLink';
-
+import { 
+  Link,
+  ListItemLink 
+} from '../controller/RouterLink';
 
 const drawerWidth = 240;
 
@@ -48,18 +53,17 @@ const useStyles = makeStyles(theme => ({
       marginLeft: drawerWidth,
     },
   },
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
-  },
   toolbar: theme.mixins.toolbar, // necessary for content to be below app bar
   drawerPaper: {
     width: drawerWidth
   },
   bottom: {
     marginTop: 'auto'
+  },
+  accountLink: {
+    marginLeft: 'auto',
+    paddingLeft: theme.spacing(2),
+    fontSize: 0
   },
   content: {
     flexGrow: 1,
@@ -72,14 +76,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type P = {|
-  title: string,
   children: React$Node
 |}
 
-const NavigationFrame = ({ title, children }: P) => {
+const NavigationFrame = ({ children }: P) => {
   const styles = useStyles();
   const theme = useTheme();
-  const { token, setToken } = useAuth();
+  const { token, username, setToken } = useAuth();
   const [ mobileOpen, setMobileOpen ] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -90,14 +93,15 @@ const NavigationFrame = ({ title, children }: P) => {
     <React.Fragment>
       <div className={styles.toolbar} />
       <Divider />
-      { token && (
-        <React.Fragment>
-          <Divider className={styles.bottom} />
-          <List>
-            <MenuItem text="Sign Out" Icon={ExitToApp} onClick={() => setToken(null)} />
-          </List>
-        </React.Fragment>
-      )}
+      <Divider className={styles.bottom} />
+      <List>
+        { token && (
+          <MenuItem text="Sign Out" Icon={Lock} onClick={() => setToken(null)} />
+        )}
+        { !token && (
+          <MenuItem text="Sign In" Icon={LockOpen} href='/login' />
+        )}
+      </List>
     </React.Fragment>
   );
 
@@ -105,20 +109,25 @@ const NavigationFrame = ({ title, children }: P) => {
     <div className={styles.root}>
       <AppBar position="fixed" className={styles.appBar}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            className={styles.menuButton}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            <Link color="textPrimary" to="/home">
-              {title}
+          <SearchBar button={(
+            <IconButton
+              size='small'
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+            >
+              <MenuIcon />
+            </IconButton>
+          )} />
+          { username && (
+            
+            <Link className={styles.accountLink} color="textPrimary" to="/home">
+              <Tooltip title={username}>
+                <AccountCircle />
+              </Tooltip>
             </Link>
-          </Typography>
+          )}
         </Toolbar>
       </AppBar>
       <nav className={styles.drawer}>
@@ -167,15 +176,32 @@ const NavigationFrame = ({ title, children }: P) => {
 type ItemProps = {|
   className?: string,
   onClick?:Event => any,
+  href?:string,
   text: string, 
   Icon: React$ComponentType<any>
 |};
 
-const MenuItem = ({ text, Icon, className, onClick }:ItemProps) => (
-  <ListItem button key={text} className={className} onClick={onClick}>
-    <ListItemIcon><Icon /></ListItemIcon>
-    <ListItemText primary={text} />
-  </ListItem>
-);
+const MenuItem = ({ text, Icon, className, href, onClick }:ItemProps) => { 
+  const children = (
+    <React.Fragment>
+      <ListItemIcon><Icon /></ListItemIcon>
+      <ListItemText primary={text} />
+    </React.Fragment>
+  );
+
+  if (href) {
+    return (
+      <ListItemLink button key={text} className={className} to={href}>
+        {children}
+      </ListItemLink>
+    );
+  }
+
+  return (
+    <ListItem button key={text} className={className} onClick={onClick}>
+      {children}
+    </ListItem>
+  );
+};
 
 export default NavigationFrame;
