@@ -6,7 +6,7 @@
   */
 
 import Mongoose from '../../service/db.js';
-import { hashPassword } from '../../service/auth.js';
+import { hashPassword } from '../../service/security.js';
 
 const User$Schema = new Mongoose.Schema({
   username: { type: String, unique: true, index: true },
