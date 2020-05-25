@@ -12,6 +12,7 @@ import httpContext from 'express-http-context';
 import httpSignature from 'http-signature';
 import { getActorId, getActor } from './user.js';
 import { getObject } from './activitypub.js';
+import { splitOnce } from '../util.js';
 
 import type { Middleware } from 'express';
 import type { Actor } from 'activitypub';
@@ -36,17 +37,6 @@ export const generateToken = (username:string) => {
     userId: getActorId(username),
     username 
   }, process.env.TOKEN_SECRET, { expiresIn: TOKEN_EXPIRATON });
-};
-
-const splitOnce = (input:string, divider:string):Array<string> => {
-  const i = input.indexOf(divider);
-  if (i < 0) {
-    return [ input ];
-  }
-  return [
-    input.substring(0, i),
-    input.substring(i + 1)
-  ];
 };
 
 export const withHeaderValidation:Middleware<> = async (req, res, next:express$NextFunction) => {

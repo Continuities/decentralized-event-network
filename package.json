@@ -15,7 +15,8 @@
     "dev:uninstall": "docker-compose -f docker/docker-compose.dev.yml down --rmi all",
     "dev:connect:api": "docker exec -it docker_api_1 /bin/sh",
     "dev:connect:app": "docker exec -it docker_app_1 /bin/sh",
-    "dev:connect:db": "docker exec -ti den-db mongo"
+    "dev:connect:db": "docker exec -ti den-db mongo",
+    "dev:connect:server": "docker exec -ti docker_server_1 /bin/sh"
   },
   "dependencies": {}
 }

@@ -7,7 +7,10 @@
 
 import React, { useMemo, forwardRef } from 'react';
 import { Link as RouterLink } from '@reach/router';
-import { Link as UILink } from '@material-ui/core';
+import { 
+  Link as UILink,
+  ListItem
+} from '@material-ui/core';
 
 type P = {
   to: string
@@ -34,3 +37,6 @@ export const routed = (Component:Class<React$Component<any>>) => {
 };
 
 export const Link = routed(UILink);
+export const ListItemLink = routed(ListItem);
+
+
