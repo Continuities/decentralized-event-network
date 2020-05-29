@@ -14,12 +14,12 @@ import { formatISO, parseISO } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
 
 type FormTarget = { target: { name: string, value: string }};
-type P = {
+type P = {|
   name: string,
   onChange: FormTarget => void,
   selected: string,
   label: string,
-};
+|};
 
 const useStyles = makeStyles((theme) => {
   const borderColor = theme.palette.type === 'light' ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)';
