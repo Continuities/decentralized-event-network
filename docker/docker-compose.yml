@@ -25,7 +25,7 @@ services:
   api:
     build:
       context: ..
-      dockerfile: api/Dockerfile.dev
+      dockerfile: api/Dockerfile
     image: den-api
     links:
       - db:db
