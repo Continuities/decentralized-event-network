@@ -23,6 +23,7 @@ FROM dev as prod
 COPY api /opt/api/
 COPY activitypub /opt/api/node_modules/activitypub/
 
+RUN cd node_modules/activitypub && yarn install && yarn build
 RUN yarn build
 
 ENV NODE_ENV=production
