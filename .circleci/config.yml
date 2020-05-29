@@ -1,17 +1,16 @@
 version: 2.1
-orbs:
-  node: circleci/node@1.1.6
 jobs:
-  build-and-test:
-    executor:
-      name: node/default
+  api-build:
+    docker:
+      - image: circleci/node:current-buster
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+      - setup_remote_docker
+      - run:
+          name: Build API image
+          working_directory: ~/project/docker
+          command: docker-compose -f docker-compose.yml -f prod.yml build api
 workflows:
     build-and-test:
       jobs:
-        - build-and-test
+        - api-build
