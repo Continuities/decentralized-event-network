@@ -124,10 +124,7 @@ const Portal = ({children}) => {
 
   React.useEffect(() => {
     portalRoot.appendChild(el);
-    return () => {
-      portalRoot.removeChild(el);
-      return;
-    }
+    return () => { portalRoot.removeChild(el); };
   }, [el, portalRoot]);
 
   return createPortal(children, el);
