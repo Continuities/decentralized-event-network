@@ -10,6 +10,12 @@ jobs:
           name: Build API image
           working_directory: ~/project/docker
           command: docker-compose -f docker-compose.yml -f prod.yml build api
+      - run:
+          name: Push API image
+          command: |
+            docker login -u="scjody+den_ci" -p=$QUAY_TOKEN quay.io
+            docker tag den-api quay.io/scjody/den-api:b$CIRCLE_BUILD_NUM
+            docker push quay.io/scjody/den-api:b$CIRCLE_BUILD_NUM
 workflows:
     build-and-test:
       jobs:
