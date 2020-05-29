@@ -16,3 +16,15 @@ EXPOSE 8080
 EXPOSE 9229
 
 CMD [ "yarn", "start" ]
+
+
+FROM dev as prod
+
+COPY api /opt/api/
+COPY activitypub /opt/api/node_modules/activitypub/
+
+RUN yarn build
+
+ENV NODE_ENV=production
+USER node
+CMD node ./dist/main.js
