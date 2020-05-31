@@ -9,16 +9,17 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import Mongoose from 'mongoose';
 import mock from 'mock-mongoose';
-import { generateToken } from '../../dist/service/auth.js';
 
 chai.use(chaiHttp);
 
 const mockMongoose = new mock.MockMongoose(Mongoose);
 
 let app;
+let security;
 before(async () => {
   await mockMongoose.prepareStorage();
   app = await import('../../dist/main.js');
+  security = await import('../../dist/service/security.js');
 });
 
 describe('User Controller', () => {
@@ -182,7 +183,7 @@ describe('User Controller', () => {
     });
 
     it('should prevent creation without a name', async () => {
-      const token = await generateToken('dude');
+      const token = await security.generateToken('dude');
       const res = await chai
         .request(app.default)
         .put('/api/user/event')
@@ -194,7 +195,7 @@ describe('User Controller', () => {
     });
 
     it('should prevent creation with a bad start', async () => {
-      const token = await generateToken('dude');
+      const token = await security.generateToken('dude');
       const res = await chai
         .request(app.default)
         .put('/api/user/event')
@@ -206,7 +207,7 @@ describe('User Controller', () => {
     });
 
     it('should prevent creation with a bad end', async () => {
-      const token = await generateToken('dude');
+      const token = await security.generateToken('dude');
       const res = await chai
         .request(app.default)
         .put('/api/user/event')
@@ -218,7 +219,7 @@ describe('User Controller', () => {
     });
 
     it('should prevent creation with invalid duration', async () => {
-      const token = await generateToken('dude');
+      const token = await security.generateToken('dude');
       const res = await chai
         .request(app.default)
         .put('/api/user/event')
