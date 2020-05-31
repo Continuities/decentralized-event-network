@@ -11,10 +11,6 @@ export const cls = (...classes:Array<?(string | boolean)>):string => {
 
 export const merge = (a:Object, b:Object):Object => Object.assign({}, a, b);
 
-export const localISODate = () => {
-  const tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
-  return (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
-};
 
 export const delay = (millis:number):Promise<void> => 
   new Promise((resolve) => {

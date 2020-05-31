@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core';
 import ProgressButton from './ProgressButton';
 import { nilControls } from '../controller/FormController';
+import DatePicker from './DatePicker';
 
 import type { $FormController } from '../controller/FormController';
 
@@ -42,24 +43,36 @@ const ControllableForm = ({ submitLabel, fields, controller }: P) => {
   } = controller ? controller() : nilControls;
   return (
     <form onSubmit={onSubmit}>
-      {fields.map(f => (
-        <TextField
-          key={f.name}
-          variant="outlined"
-          margin="normal"
-          required={f.required}
-          fullWidth
-          name={f.name}
-          label={f.label}
-          type={f.type}
-          value={values[f.name] || ''}
-          onChange={onChange}
-          autoComplete={f.autoComplete}
-          error={!!errors[f.name]}
-          helperText={errors[f.name]}
-          inputProps={f.pattern && { pattern: f.pattern[0], title: f.pattern[1] }}
-        />
-      ))}
+      {fields.map(f => {
+        if (f.type === 'datetime-local') {
+          return (
+            <DatePicker
+              key={f.name}
+              name={f.name}
+              label={f.label}
+              onChange={onChange}
+              selected={values[f.name]}
+            />
+          )
+        } else {
+          return (
+            <TextField
+              key={f.name}
+              variant="outlined"
+              margin="normal"
+              required={f.required}
+              fullWidth
+              name={f.name}
+              label={f.label}
+              type={f.type}
+              value={values[f.name] || ''}
+              onChange={onChange}
+              autoComplete={f.autoComplete}
+              error={!!errors[f.name]}
+              helperText={errors[f.name]}
+              inputProps={f.pattern && { pattern: f.pattern[0], title: f.pattern[1] }}
+            />
+          )}})}
       { responseCode === 401 && <Typography align="center" color="error">Incorrect username or password</Typography> }
       <Box mt={4}>
         <ProgressButton

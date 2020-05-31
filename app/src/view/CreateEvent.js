@@ -12,7 +12,7 @@ import EventForm from './EventForm';
 import FormController from '../controller/FormController';
 import { Link } from '../controller/RouterLink';
 import { navigate } from '@reach/router';
-import { localISODate } from '../util/util';
+import { addHours, formatISO, startOfHour } from 'date-fns';
 import { 
   Container,
   Card,
@@ -31,8 +31,8 @@ const CreateEvent = () => {
       navigate('/home');
     },
     {
-      start: localISODate(),
-      end: localISODate()
+      start: formatISO(addHours(startOfHour(Date.now()), 2)),
+      end: formatISO(addHours(startOfHour(Date.now()), 5)),
     }
   );
   return (

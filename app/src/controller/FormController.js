@@ -18,7 +18,7 @@ type FormControls = {|
   isSubmitting: boolean
 |};
 export type $FormController = () => FormControls;
-type FormTarget = { target: HTMLInputElement };
+type FormTarget = { target: { name: string, value: string }};
 export type FormValues = {
   [string]: string
 };
