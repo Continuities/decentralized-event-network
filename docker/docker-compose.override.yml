@@ -3,6 +3,9 @@ version: '3.4'
 services:
 
   app:
+    build:
+      context: ../app
+      dockerfile: Dockerfile.dev
     environment:
       - NODE_ENV=development
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
