@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "eslint": "eslint ./src",
-    "flow:check": "flow check ./src/",
+    "flow:check": "flow check",
     "flow:build": "flow-remove-types ./src/ -d ./dist/ --all --pretty",
     "build": "yarn eslint && yarn flow:check && yarn flow:build",
     "serve": "yarn flow:build && node --inspect ./dist/main.js",
