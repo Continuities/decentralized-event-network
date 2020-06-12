@@ -46,8 +46,26 @@ jobs:
           working_directory: ~/project/api
           command: yarn test
 
+  app-build:
+    docker:
+      - image: circleci/node:current-buster
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build app image
+          working_directory: ~/project/docker
+          command: docker-compose -f docker-compose.yml -f prod.yml build app
+      - run:
+          name: Push app image
+          command: |
+            docker login -u="scjody+den_ci" -p=$QUAY_TOKEN quay.io
+            docker tag den-app quay.io/scjody/den-app:b$CIRCLE_BUILD_NUM
+            docker push quay.io/scjody/den-app:b$CIRCLE_BUILD_NUM
+
 workflows:
     build-and-test:
       jobs:
         - api-build
         - api-test
+        - app-build
