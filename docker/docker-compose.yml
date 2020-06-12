@@ -17,6 +17,9 @@ services:
       - app
 
   app:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
     image: den-app
 
   api:
