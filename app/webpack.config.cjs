@@ -9,7 +9,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.(js|jsx)$/,
-      exclude: /(node_modules|bower_components)/,
+      exclude: (modulePath) => /node_modules/.test(modulePath) && !/node_modules\/activitypub/.test(modulePath),
       use: [ "babel-loader", 'eslint-loader' ]
     }, {
       test: /\.css$/,
