@@ -21,6 +21,8 @@ services:
       context: ..
       dockerfile: app/Dockerfile
     image: den-app
+    ports:
+      - 3000:3000 # Serves HMR in dev, static files in prod
 
   api:
     build:

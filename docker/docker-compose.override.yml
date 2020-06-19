@@ -13,8 +13,6 @@ services:
     volumes:
       - ../app:/opt/app
       - ../activitypub:/opt/activitypub # To see shared data models
-    ports:
-      - 3000:3000 # For docker to know where to redirect HMR queries
 
   api:
     build:
