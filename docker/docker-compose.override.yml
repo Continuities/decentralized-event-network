@@ -1,26 +1,11 @@
-version: '3'
-
-volumes:
-  data-volume:
+version: '3.4'
 
 services:
 
-  server:
-    build:
-      context: ../.
-      dockerfile: docker/server/Dockerfile.dev
-    image: den-server
-    ports:
-      - 80:80
-    depends_on:
-      - api
-      - app
-
   app:
-    build: 
+    build:
       context: ../app
       dockerfile: Dockerfile.dev
-    image: den-app
     environment:
       - NODE_ENV=development
       - EXTRA_WEBPACK_DEV_SERVER_ARGS
@@ -28,18 +13,12 @@ services:
     volumes:
       - ../app:/opt/app
       - ../activitypub:/opt/activitypub # To see shared data models
-    ports:
-      - 3000:3000 # For docker to now where to redirect HMR queries
 
   api:
     build:
-      context: ../api
-      dockerfile: Dockerfile.dev
-    image: den-api
+      target: dev
     environment:
       - NODE_ENV=development
-    links:
-      - db:db
     volumes:
       - ../api:/opt/api
       - ../activitypub:/opt/activitypub # To see shared data models
@@ -48,13 +27,7 @@ services:
       - 8080:8080 # unbind this in prod
       - 9229:9229 # node debugger
     command: bash -c 'cd /opt/api/node_modules && rm -rf activitypub && ln -s ../../activitypub activitypub && cd /opt/api && yarn start'
-    depends_on:
-      - db
 
   db:
-    container_name: den-db
-    image: mongo:latest
-    volumes:
-      - data-volume:/data/db
     ports:
       - 27017:27017 # unbind this in prod

@@ -1,5 +1,5 @@
 FROM nginx:latest
 
-ADD /config/nginx.dev.conf /etc/nginx/nginx.conf
+COPY /config/nginx.base.conf /etc/nginx/conf.d/
 
 EXPOSE 80
